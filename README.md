@@ -4,6 +4,10 @@
 
 纯瞎搞，脑子抽疯的时候会更新一下。
 
+## 有用的
+
+* [MTOJ介绍](https://friend-me.github.io/Easy_Projects/MTOIintro.html)
+
 ## 项目
 
 * [闪电反应测试](https://friend-me.github.io/Easy_Projects/react.html)
