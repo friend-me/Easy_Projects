@@ -136,7 +136,7 @@
   .hero{
     position:relative;z-index:1;
     max-width:1180px;margin:0 auto;
-    padding:84px 24px 32px;
+    padding:80px 24px 20px;
   }
   .hex-float{
     position:absolute;pointer-events:none;z-index:0;
@@ -167,7 +167,7 @@
     background:rgba(95,159,214,.08);
     color:var(--primary-bright);
     font-size:13px;letter-spacing:.04em;
-    margin-bottom:26px;
+    margin-bottom:24px;
   }
   .hero-brand-row{
     display:flex;align-items:center;gap:22px;
@@ -216,7 +216,7 @@
   .hero-cn{
     font-size:clamp(14px,2.1vw,18px);
     color:var(--text-dim);letter-spacing:.24em;
-    margin-bottom:22px;
+    margin-bottom:20px;
   }
   .hero-slogan{
     font-size:clamp(19px,2.8vw,26px);
@@ -225,7 +225,7 @@
   }
   .hero-desc{
     color:var(--text-dim);font-size:15.5px;
-    max-width:520px;margin-bottom:28px;
+    max-width:520px;margin-bottom:26px;
   }
   .hero-btns{display:flex;gap:14px;justify-content:flex-start;flex-wrap:wrap}
   .btn{
@@ -250,10 +250,10 @@
     background:rgba(95,159,214,.06);
   }
   .btn-ghost:hover{background:rgba(95,159,214,.14);transform:translateY(-2px)}
-  .hero-hint{margin-top:16px;font-size:13px;color:var(--text-dimmer)}
+  .hero-hint{margin-top:14px;font-size:13px;color:var(--text-dimmer)}
 
   /* Hero 右侧 */
-  .hero-right{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .hero-right{display:flex;flex-direction:column;gap:12px;min-width:0}
   .terminal{
     width:100%;text-align:left;
     border-radius:12px;overflow:hidden;
@@ -303,11 +303,11 @@
   /* ---------- 数据条 ---------- */
   .stats{
     position:relative;z-index:1;
-    max-width:1000px;margin:0 auto;padding:10px 24px 18px;
-    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+    max-width:1000px;margin:0 auto;padding:6px 24px 12px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
   }
   .stat{
-    text-align:center;padding:24px 12px;border-radius:16px;
+    text-align:center;padding:20px 10px;border-radius:14px;
     border:1px solid var(--card-border);
     background:var(--card);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -315,16 +315,16 @@
   }
   .stat:hover{border-color:rgba(95,159,214,.4);box-shadow:0 16px 34px -18px rgba(95,159,214,.5);transform:translateY(-3px)}
   .stat-num{
-    font-size:clamp(28px,4.6vw,40px);font-weight:800;line-height:1.1;
+    font-size:clamp(26px,4.4vw,36px);font-weight:800;line-height:1.1;
     background:linear-gradient(180deg,#EAF4FF,#5F9FD6);
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
-  .stat-label{font-size:13px;color:var(--text-dim);margin-top:6px}
+  .stat-label{font-size:12.5px;color:var(--text-dim);margin-top:4px}
 
   /* ---------- Marquee ---------- */
   .marquee{
     position:relative;z-index:1;
-    overflow:hidden;padding:13px 0;margin-top:6px;
+    overflow:hidden;padding:10px 0;margin-top:4px;
     border-top:1px solid rgba(95,159,214,.12);
     border-bottom:1px solid rgba(95,159,214,.12);
     background:rgba(10,20,35,.4);
@@ -337,7 +337,7 @@
   }
   .marquee-group{display:flex;align-items:center;gap:44px;padding-right:44px}
   .marquee-group span{
-    font-size:14px;font-weight:700;letter-spacing:.14em;
+    font-size:13.5px;font-weight:700;letter-spacing:.14em;
     color:rgba(138,163,191,.85);white-space:nowrap;
     display:inline-flex;align-items:center;gap:44px;
   }
@@ -347,35 +347,35 @@
   }
   @keyframes marquee{to{transform:translateX(-50%)}}
 
-  /* ---------- 通用 Section ---------- */
+  /* ---------- 通用 Section（整体收紧） ---------- */
   .section{
     position:relative;z-index:1;
-    max-width:1120px;margin:0 auto;padding:92px 24px;
+    max-width:1120px;margin:0 auto;padding:64px 24px;
     scroll-margin-top:80px;
   }
-  .section-head{text-align:center;margin-bottom:52px}
+  .section-head{text-align:center;margin-bottom:36px}
   .kicker{
     display:inline-block;font-size:12px;font-weight:700;
     letter-spacing:.18em;color:var(--primary);
-    margin-bottom:14px;padding:4px 12px;border-radius:6px;
+    margin-bottom:12px;padding:4px 12px;border-radius:6px;
     background:rgba(95,159,214,.09);
     border:1px solid rgba(95,159,214,.2);
   }
   .section-head h2{
-    font-size:clamp(28px,4.2vw,40px);font-weight:800;
-    letter-spacing:-.01em;margin-bottom:14px;
+    font-size:clamp(26px,3.6vw,34px);font-weight:800;
+    letter-spacing:-.01em;margin-bottom:12px;
   }
-  .section-head p{color:var(--text-dim);font-size:16px}
+  .section-head p{color:var(--text-dim);font-size:15px}
 
   /* ---------- 理念（两栏紧凑） ---------- */
-  #philosophy{padding-top:72px;padding-bottom:72px}
+  #philosophy{padding-top:56px;padding-bottom:56px}
   .philosophy-card{
     display:grid;
     grid-template-columns:.92fr 1.08fr;
-    gap:44px;
+    gap:40px;
     align-items:center;
-    padding:46px 44px;
-    border-radius:24px;
+    padding:40px 40px;
+    border-radius:22px;
     background:linear-gradient(135deg,rgba(95,159,214,.12),rgba(139,127,232,.07));
     border:1px solid rgba(95,159,214,.22);
     position:relative;overflow:hidden;
@@ -392,21 +392,21 @@
   }
   .ph-left{position:relative;z-index:1}
   .ph-left h2{
-    font-size:clamp(26px,3.4vw,36px);
+    font-size:clamp(24px,3.2vw,32px);
     line-height:1.28;font-weight:800;
     margin-top:12px;
   }
   .ph-right{
     position:relative;z-index:1;
     border-left:1px solid rgba(95,159,214,.18);
-    padding-left:44px;
+    padding-left:40px;
   }
   .ph-quote{
-    font-size:clamp(18px,2.3vw,22px);
+    font-size:clamp(17px,2.2vw,21px);
     font-weight:600;color:#DCEBF9;line-height:1.55;
-    margin-bottom:14px;
+    margin-bottom:12px;
   }
-  .ph-desc{color:var(--text-dim);font-size:15px;margin-bottom:18px;line-height:1.8}
+  .ph-desc{color:var(--text-dim);font-size:14.5px;margin-bottom:16px;line-height:1.8}
   .ph-tags{display:flex;gap:8px;flex-wrap:wrap}
   .ph-tag{
     font-size:12px;padding:4px 12px;border-radius:999px;
@@ -416,9 +416,9 @@
   }
 
   /* ---------- 特点 ---------- */
-  .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
   .feature-card{
-    padding:34px 30px;border-radius:18px;
+    padding:28px 26px;border-radius:16px;
     background:var(--card);
     border:1px solid var(--card-border);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -440,114 +440,132 @@
   .feature-card:hover{border-color:rgba(95,159,214,.42);box-shadow:0 24px 50px -26px rgba(95,159,214,.55)}
   .feature-card:hover::before,.feature-card:hover::after{opacity:1}
   .feat-icon{
-    display:inline-block;font-size:13px;font-weight:800;
+    display:inline-block;font-size:12px;font-weight:800;
     color:var(--primary);letter-spacing:.1em;
-    padding:3px 10px;margin-bottom:16px;
+    padding:2px 9px;margin-bottom:14px;
     border:1px solid rgba(95,159,214,.3);border-radius:6px;
     position:relative;z-index:1;
   }
-  .feature-card h3{font-size:21px;margin-bottom:12px;font-weight:700;position:relative;z-index:1}
-  .feature-card p{color:var(--text-dim);font-size:15px;position:relative;z-index:1}
+  .feature-card h3{font-size:19px;margin-bottom:10px;font-weight:700;position:relative;z-index:1}
+  .feature-card p{color:var(--text-dim);font-size:14.5px;position:relative;z-index:1;line-height:1.75}
   .feat-bg-num{
     position:absolute;right:14px;bottom:2px;
-    font-size:96px;font-weight:900;line-height:1;
+    font-size:84px;font-weight:900;line-height:1;
     color:rgba(95,159,214,.05);
     pointer-events:none;user-select:none;
   }
 
-  /* ---------- 诗歌（左右两栏） ---------- */
+  /* ---------- 诗歌 + 命名野史（并排两栏） ---------- */
+  .poem-naming-grid{
+    display:grid;
+    grid-template-columns:1.05fr .95fr;
+    gap:20px;
+    align-items:stretch;
+  }
   .poem-card{
-    max-width:980px;margin:0 auto;padding:56px 48px 52px;
-    border-radius:24px;
-    background:radial-gradient(ellipse at 50% 0%,rgba(95,159,214,.14),transparent 70%),var(--card);
+    padding:36px 34px 32px;
+    border-radius:20px;
+    background:radial-gradient(ellipse at 0% 0%,rgba(95,159,214,.14),transparent 65%),var(--card);
     border:1px solid var(--card-border);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     position:relative;overflow:hidden;
-    text-align:center;
+    text-align:left;
+    display:flex;flex-direction:column;
   }
   .poem-card h2{
     font-family:var(--kai);
-    font-size:clamp(30px,4.6vw,42px);
+    font-size:clamp(26px,3.4vw,34px);
     font-weight:400;
     letter-spacing:.1em;
     color:#EAF4FF;
-    margin-bottom:34px;
+    margin-bottom:6px;
+    text-align:left;
   }
   .poem-card h2::after{
     content:'';
     display:block;
-    width:48px;height:2px;
-    margin:18px auto 0;
+    width:44px;height:2px;
+    margin:14px 0 0;
     background:linear-gradient(90deg,var(--primary),var(--pink));
     border-radius:2px;
     opacity:.9;
   }
-  .poem-layout{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:0;
-    text-align:left;
-    align-items:start;
-  }
-  .poem-left{
-    padding-right:44px;
-  }
-  .poem-right{
-    border-left:1px dashed rgba(95,159,214,.3);
-    padding-left:44px;
-  }
   .poem{
     font-family:var(--kai);
+    margin-top:22px;
   }
   .poem p{
-    font-size:clamp(16px,2.2vw,20px);line-height:2.15;
+    font-size:clamp(16px,2.1vw,19px);line-height:2.05;
     color:#D6E5F5;letter-spacing:.14em;
     font-weight:400;
   }
   .poem-line{display:block;opacity:0;translate:0 14px;transition:opacity .7s,translate .7s}
   .poem-line.on{opacity:1;translate:0 0}
   .poem-note{
-    color:var(--text-dim);font-size:14.5px;line-height:2;
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px dashed rgba(95,159,214,.25);
+    color:var(--text-dim);font-size:13.5px;line-height:1.9;
     letter-spacing:.02em;
     position:relative;z-index:1;
   }
   .poem-note::before{
     content:'· 背景 ·';
     display:block;
-    font-size:12px;letter-spacing:.18em;
+    font-size:11px;letter-spacing:.18em;
     color:var(--primary);
-    margin-bottom:14px;
+    margin-bottom:10px;
     font-weight:700;
   }
 
-  /* ---------- 命名野史 ---------- */
-  .timeline{max-width:720px;margin:0 auto;position:relative;padding-left:28px}
+  .naming-card{
+    padding:36px 34px 32px;
+    border-radius:20px;
+    background:var(--card);
+    border:1px solid var(--card-border);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    position:relative;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .naming-card .kicker{margin-bottom:10px}
+  .naming-card h2{
+    font-size:clamp(24px,3.2vw,32px);
+    font-weight:800;
+    letter-spacing:-.01em;
+    margin-bottom:8px;
+    text-align:left;
+  }
+  .naming-sub{
+    color:var(--text-dim);font-size:13.5px;
+    margin-bottom:26px;line-height:1.6;
+  }
+  .timeline{position:relative;padding-left:24px;flex:1}
   .timeline::before{
-    content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;
+    content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;
     background:linear-gradient(180deg,var(--primary),rgba(139,127,232,.4),transparent);
   }
-  .tl-item{position:relative;margin-bottom:36px}
+  .tl-item{position:relative;margin-bottom:24px}
   .tl-item:last-child{margin-bottom:0}
   .tl-dot{
-    position:absolute;left:-28px;top:8px;width:14px;height:14px;
+    position:absolute;left:-24px;top:6px;width:12px;height:12px;
     border-radius:50%;background:var(--primary);
-    box-shadow:0 0 0 4px rgba(95,159,214,.15),0 0 16px rgba(95,159,214,.6);
+    box-shadow:0 0 0 4px rgba(95,159,214,.15),0 0 14px rgba(95,159,214,.6);
   }
   .tl-item.warn .tl-dot{
     background:var(--accent);
-    box-shadow:0 0 0 4px rgba(139,127,232,.15),0 0 16px rgba(139,127,232,.6);
+    box-shadow:0 0 0 4px rgba(139,127,232,.15),0 0 14px rgba(139,127,232,.6);
   }
-  .tl-body h3{font-size:19px;margin-bottom:8px;font-weight:700}
-  .tl-body p{color:var(--text-dim);font-size:15px}
+  .tl-body h3{font-size:16.5px;margin-bottom:5px;font-weight:700}
+  .tl-body p{color:var(--text-dim);font-size:13.5px;line-height:1.8}
   .tl-body a{color:var(--primary-bright);text-decoration:none;border-bottom:1px dashed rgba(127,184,232,.4)}
   .tl-body a:hover{color:#A9D4F7}
 
   /* ---------- 比赛 ---------- */
-  .contest-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .contest-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
   .contest-card{
     display:flex;flex-direction:column;
     text-decoration:none;color:inherit;
-    padding:32px 28px;border-radius:16px;
+    padding:26px 24px;border-radius:14px;
     background:var(--card);
     border:1px solid var(--card-border);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -557,7 +575,7 @@
     will-change:transform;
   }
   .contest-card::before{
-    content:'';position:absolute;inset:0;border-radius:16px;padding:1px;
+    content:'';position:absolute;inset:0;border-radius:14px;padding:1px;
     background:linear-gradient(135deg,rgba(95,159,214,.7),rgba(139,127,232,.55),rgba(95,159,214,.1));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -575,39 +593,39 @@
   }
   .contest-card:hover::before,.contest-card:hover::after{opacity:1}
   .contest-num{
-    position:absolute;right:22px;top:14px;
-    font-size:48px;font-weight:900;line-height:1;
+    position:absolute;right:20px;top:12px;
+    font-size:42px;font-weight:900;line-height:1;
     color:rgba(95,159,214,.09);
     pointer-events:none;
   }
   .contest-tag{
-    display:inline-block;font-size:12px;font-weight:800;
+    display:inline-block;font-size:11.5px;font-weight:800;
     letter-spacing:.08em;color:var(--primary-bright);
-    padding:3px 10px;margin-bottom:16px;border-radius:6px;
+    padding:2px 9px;margin-bottom:12px;border-radius:5px;
     background:rgba(95,159,214,.12);
     border:1px solid rgba(95,159,214,.25);
     position:relative;z-index:1;align-self:flex-start;
   }
-  .contest-card h3{font-size:20px;margin-bottom:12px;font-weight:700;position:relative;z-index:1}
+  .contest-card h3{font-size:18px;margin-bottom:10px;font-weight:700;position:relative;z-index:1}
   .contest-preview{
-    font-size:13.5px;color:var(--text-dim);line-height:1.7;
-    margin-bottom:18px;padding-left:12px;
+    font-size:13px;color:var(--text-dim);line-height:1.65;
+    margin-bottom:14px;padding-left:11px;
     border-left:2px solid rgba(95,159,214,.25);
     position:relative;z-index:1;flex:1;
   }
   .contest-arrow{
-    font-size:14px;color:var(--primary);position:relative;z-index:1;
-    display:inline-flex;align-items:center;gap:6px;
+    font-size:13px;color:var(--primary);position:relative;z-index:1;
+    display:inline-flex;align-items:center;gap:5px;
     transition:gap .25s;
   }
-  .contest-card:hover .contest-arrow{gap:12px}
+  .contest-card:hover .contest-arrow{gap:10px}
 
   /* ---------- 一些有趣的题 ---------- */
-  .problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .problem-card{
     display:flex;flex-direction:column;
     text-decoration:none;color:inherit;
-    padding:26px 24px 22px;border-radius:16px;
+    padding:22px 20px 18px;border-radius:14px;
     background:var(--card);
     border:1px solid var(--card-border);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
@@ -616,7 +634,7 @@
     transform-style:preserve-3d;will-change:transform;
   }
   .problem-card::before{
-    content:'';position:absolute;inset:0;border-radius:16px;padding:1px;
+    content:'';position:absolute;inset:0;border-radius:14px;padding:1px;
     background:linear-gradient(135deg,rgba(95,159,214,.7),rgba(139,127,232,.55),rgba(95,159,214,.1));
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
@@ -635,41 +653,41 @@
   .problem-card:hover::before,.problem-card:hover::after{opacity:1}
   .problem-top{
     display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:14px;position:relative;z-index:1;
+    margin-bottom:11px;position:relative;z-index:1;
   }
   .p-tag{
     font-size:11px;font-weight:800;letter-spacing:.12em;
     color:var(--primary-bright);
-    padding:2px 9px;border-radius:5px;
+    padding:2px 8px;border-radius:4px;
     background:rgba(95,159,214,.13);
     border:1px solid rgba(95,159,214,.28);
   }
   .p-idx{
-    font-size:12px;font-weight:700;color:var(--text-dimmer);letter-spacing:.06em;
+    font-size:11.5px;font-weight:700;color:var(--text-dimmer);letter-spacing:.06em;
   }
   .problem-card h3{
-    font-size:16.5px;font-weight:700;line-height:1.45;
-    margin-bottom:12px;position:relative;z-index:1;
+    font-size:15.5px;font-weight:700;line-height:1.45;
+    margin-bottom:10px;position:relative;z-index:1;
     word-break:break-word;
   }
   .p-preview{
-    font-size:13.5px;color:var(--text-dim);line-height:1.75;
-    padding-left:12px;border-left:2px solid rgba(95,159,214,.28);
-    margin-bottom:16px;position:relative;z-index:1;
+    font-size:13px;color:var(--text-dim);line-height:1.7;
+    padding-left:11px;border-left:2px solid rgba(95,159,214,.28);
+    margin-bottom:12px;position:relative;z-index:1;
     flex:1;
   }
   .p-preview .p-line{display:block}
   .p-open{
-    font-size:13px;color:var(--primary);position:relative;z-index:1;
+    font-size:12.5px;color:var(--primary);position:relative;z-index:1;
     display:inline-flex;align-items:center;gap:5px;
     transition:gap .25s;
   }
-  .problem-card:hover .p-open{gap:10px}
+  .problem-card:hover .p-open{gap:8px}
 
   /* ---------- 精选板绘 ---------- */
-  .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
   .gallery-item{
-    border-radius:16px;overflow:hidden;
+    border-radius:14px;overflow:hidden;
     background:var(--card);
     border:1px solid var(--card-border);
     transition:border-color .3s,box-shadow .3s,transform .3s;
@@ -697,7 +715,7 @@
     position:absolute;inset:0;
     display:none;flex-direction:column;align-items:center;justify-content:center;
     gap:10px;text-align:center;padding:20px;
-    color:var(--text-dim);font-size:13.5px;line-height:1.7;
+    color:var(--text-dim);font-size:13px;line-height:1.7;
   }
   .gallery-fallback a{
     color:var(--primary-bright);text-decoration:none;
@@ -708,19 +726,19 @@
   .img-error .gallery-fallback{display:flex}
   .gallery-caption{
     display:flex;align-items:center;justify-content:space-between;
-    padding:14px 18px;
+    padding:11px 15px;
     border-top:1px solid rgba(95,159,214,.1);
   }
   .gallery-tag{
-    font-size:12px;font-weight:800;letter-spacing:.08em;
+    font-size:11.5px;font-weight:800;letter-spacing:.08em;
     color:var(--primary-bright);
-    padding:2px 9px;border-radius:5px;
+    padding:2px 8px;border-radius:4px;
     background:rgba(95,159,214,.12);
     border:1px solid rgba(95,159,214,.25);
   }
-  .gallery-name{font-size:13.5px;color:var(--text-dim);font-weight:600}
+  .gallery-name{font-size:13px;color:var(--text-dim);font-weight:600}
   .gallery-zoom{
-    font-size:12px;color:var(--text-dimmer);letter-spacing:.06em;
+    font-size:11.5px;color:var(--text-dimmer);letter-spacing:.06em;
     display:inline-flex;align-items:center;gap:4px;
   }
 
@@ -762,24 +780,24 @@
   .lightbox-close:hover{background:rgba(95,159,214,.2);transform:rotate(90deg)}
 
   /* ---------- 关于 ---------- */
-  .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
   .info-card{
-    padding:28px 22px;border-radius:16px;text-align:center;
+    padding:22px 16px;border-radius:14px;text-align:center;
     background:var(--card);border:1px solid var(--card-border);
     transition:border-color .3s,transform .3s,box-shadow .3s;
   }
   .info-card:hover{border-color:rgba(95,159,214,.4);transform:translateY(-3px);box-shadow:0 18px 36px -20px rgba(95,159,214,.5)}
   .info-card h4{
-    font-size:13px;color:var(--primary);letter-spacing:.08em;
-    margin-bottom:10px;font-weight:700;
+    font-size:12px;color:var(--primary);letter-spacing:.08em;
+    margin-bottom:8px;font-weight:700;
   }
-  .info-card p{font-size:15px;color:#C8DDF2;font-weight:600}
+  .info-card p{font-size:14px;color:#C8DDF2;font-weight:600}
 
   /* ---------- CTA ---------- */
-  .cta-section{position:relative;z-index:1;padding:30px 24px 96px}
+  .cta-section{position:relative;z-index:1;padding:16px 24px 64px}
   .cta-card{
-    max-width:900px;margin:0 auto;padding:60px 40px;text-align:center;
-    border-radius:28px;
+    max-width:900px;margin:0 auto;padding:44px 36px;text-align:center;
+    border-radius:24px;
     background:linear-gradient(135deg,rgba(95,159,214,.16),rgba(139,127,232,.1));
     border:1px solid rgba(95,159,214,.28);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -791,28 +809,28 @@
     animation:quoteDrift 14s ease-in-out infinite alternate;
     pointer-events:none;
   }
-  .cta-card h2{font-size:clamp(26px,4vw,36px);margin-bottom:14px;font-weight:800;position:relative}
-  .cta-card > p{color:var(--text-dim);margin-bottom:32px;position:relative}
+  .cta-card h2{font-size:clamp(24px,3.6vw,32px);margin-bottom:12px;font-weight:800;position:relative}
+  .cta-card > p{color:var(--text-dim);margin-bottom:26px;position:relative;font-size:15px}
   .cta-card .hero-btns{position:relative;justify-content:center}
 
   /* ---------- 页脚 ---------- */
   footer{
     position:relative;z-index:1;
     border-top:1px solid rgba(95,159,214,.12);
-    padding:48px 24px;
+    padding:36px 24px;
   }
   .footer-inner{
     max-width:1120px;margin:0 auto;
-    display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;
   }
-  .footer-brand{display:flex;align-items:center;gap:10px;font-weight:700;color:#C8DDF2;font-size:17px}
+  .footer-brand{display:flex;align-items:center;gap:10px;font-weight:700;color:#C8DDF2;font-size:16px}
   .footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
   .footer-links a{
-    color:var(--text-dim);text-decoration:none;font-size:14px;
+    color:var(--text-dim);text-decoration:none;font-size:13.5px;
     transition:color .2s;
   }
   .footer-links a:hover{color:var(--primary-bright)}
-  .footer-copy{color:var(--text-dimmer);font-size:13px}
+  .footer-copy{color:var(--text-dimmer);font-size:12.5px}
 
   /* ---------- 回到顶部 ---------- */
   .back-top{
@@ -843,31 +861,23 @@
     .nav-cta{margin-left:auto}
   }
   @media (max-width:900px){
-    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .hero-grid{grid-template-columns:1fr;gap:36px}
     .hero-right{max-width:560px;width:100%}
-    .hero{padding-top:64px}
-    .philosophy-card{grid-template-columns:1fr;gap:26px;padding:36px 30px}
-    .ph-right{border-left:none;border-top:1px solid rgba(95,159,214,.18);padding-left:0;padding-top:26px}
+    .hero{padding-top:60px}
+    .philosophy-card{grid-template-columns:1fr;gap:24px;padding:32px 26px}
+    .ph-right{border-left:none;border-top:1px solid rgba(95,159,214,.18);padding-left:0;padding-top:24px}
     .feature-grid,.contest-grid{grid-template-columns:1fr}
     .problem-grid{grid-template-columns:repeat(2,1fr)}
     .info-grid{grid-template-columns:repeat(2,1fr)}
     .spotlight{display:none}
-    .poem-layout{grid-template-columns:1fr;gap:0}
-    .poem-left{padding-right:0}
-    .poem-right{
-      border-left:none;
-      border-top:1px dashed rgba(95,159,214,.3);
-      padding-left:0;
-      padding-top:28px;
-      margin-top:28px;
-    }
+    .poem-naming-grid{grid-template-columns:1fr;gap:16px}
   }
   @media (max-width:640px){
     .stats{grid-template-columns:repeat(2,1fr)}
-    .hero{padding-top:52px}
-    .section{padding:72px 20px}
-    #philosophy{padding-top:56px;padding-bottom:56px}
-    .poem-card,.philosophy-card,.cta-card{padding:34px 22px}
+    .hero{padding-top:48px}
+    .section{padding:52px 20px}
+    #philosophy{padding-top:44px;padding-bottom:44px}
+    .poem-card,.naming-card,.philosophy-card,.cta-card{padding:28px 22px}
     .hero-brand-row{gap:14px}
     .hex-logo-wrap{width:72px;height:80px}
     .hex-logo{width:62px;height:70px}
@@ -914,7 +924,7 @@
     <div class="nav-links">
       <a href="#philosophy">理念</a>
       <a href="#features">特点</a>
-      <a href="#naming">野史</a>
+      <a href="#poem-naming">诗与野史</a>
       <a href="#contests">比赛</a>
       <a href="#problems">趣题</a>
       <a href="#gallery">板绘</a>
@@ -931,7 +941,6 @@
   <div class="hex-float hf3"></div>
 
   <div class="hero-grid">
-    <!-- 左栏 -->
     <div class="hero-left">
       <div class="hero-badge reveal">Hydro 高级域 · 邀请制</div>
 
@@ -953,7 +962,6 @@
       <p class="hero-hint reveal"><span class="bb">𝕄𝕋𝕆𝕁</span> 为邀请制，需“关系”入场；HexOJ 可自行注册。</p>
     </div>
 
-    <!-- 右栏 -->
     <div class="hero-right">
       <div class="terminal reveal" id="terminal">
         <div class="term-bar">
@@ -1055,69 +1063,62 @@
   </div>
 </section>
 
-<!-- 诗歌（左右两栏） -->
-<section class="section" id="poem">
-  <div class="poem-card reveal">
-    <span class="kicker">THE POEM</span>
-    <h2>在相思树下</h2>
-    <div class="poem-layout">
-      <!-- 左栏：诗 -->
-      <div class="poem-left">
-        <div class="poem" id="poem-text">
-          <span class="poem-line"><p>年年桃树下</p></span>
-          <span class="poem-line"><p>常看一个变成俩</p></span>
-          <span class="poem-line"><p>小小心愿常比划</p></span>
-          <span class="poem-line"><p>快快实现吧</p></span>
-          <span class="poem-line"><p>却没看到他也在树下</p></span>
-          <span class="poem-line"><p>相逢二字纵使隔天涯</p></span>
-          <span class="poem-line"><p>转角总会遇上他</p></span>
-          <span class="poem-line"><p>缘分缘分啊</p></span>
-        </div>
+<!-- 诗歌 + 命名野史（并排） -->
+<section class="section" id="poem-naming">
+  <div class="poem-naming-grid">
+    <!-- 左：诗歌 -->
+    <div class="poem-card reveal">
+      <span class="kicker">THE POEM</span>
+      <h2>在相思树下</h2>
+      <div class="poem" id="poem-text">
+        <span class="poem-line"><p>年年桃树下</p></span>
+        <span class="poem-line"><p>常看一个变成俩</p></span>
+        <span class="poem-line"><p>小小心愿常比划</p></span>
+        <span class="poem-line"><p>快快实现吧</p></span>
+        <span class="poem-line"><p>却没看到他也在树下</p></span>
+        <span class="poem-line"><p>相逢二字纵使隔天涯</p></span>
+        <span class="poem-line"><p>转角总会遇上他</p></span>
+        <span class="poem-line"><p>缘分缘分啊</p></span>
       </div>
-      <!-- 右栏：描述 -->
-      <div class="poem-right">
-        <p class="poem-note">
-          2024 年暑假集训 Day4 模拟赛 C 题背景。一半神圣，一半雷霆；又多重人格，又精神分裂，让人不知所云、意义不明。后来被 UID 105 改编出无数劲爆猎奇版本，反而把原版从梦话拉上了神坛。
-        </p>
-      </div>
+      <p class="poem-note">
+        2024 年暑假集训 Day4 模拟赛 C 题背景。一半神圣，一半雷霆；又多重人格，又精神分裂，让人不知所云、意义不明。后来被 UID 105 改编出无数劲爆猎奇版本，反而把原版从梦话拉上了神坛。
+      </p>
     </div>
-  </div>
-</section>
 
-<!-- 命名野史 -->
-<section class="section" id="naming">
-  <div class="section-head reveal">
-    <span class="kicker">NAMING</span>
-    <h2>命名野史</h2>
-    <p>一个歧义直译，如何长成一堆不明物种。</p>
-  </div>
-  <div class="timeline">
-    <div class="tl-item warn reveal">
-      <div class="tl-dot"></div>
-      <div class="tl-body">
-        <h3>“在相思树下的域”</h3>
-        <p><span class="bb">𝕄𝕋𝕆𝕁</span> 曾是站长在码力王国 / <a href="https://www.oi-coding.cn/" target="_blank" rel="noopener">oi-coding.cn</a> 盗取 SU 账号后创建的域。为了玩梗，把域名写成了“在相思树下的域”。</p>
-      </div>
-    </div>
-    <div class="tl-item reveal">
-      <div class="tl-dot"></div>
-      <div class="tl-body">
-        <h3>“Miss Tree OI”</h3>
-        <p>站长的同学 qzl / 千年生蚝精 首次提出这个概念 —— 显然是个有歧义的直译。</p>
-      </div>
-    </div>
-    <div class="tl-item reveal">
-      <div class="tl-dot"></div>
-      <div class="tl-body">
-        <h3>站长偏偏采用了它</h3>
-        <p>于是 <span class="bb">𝕄𝕋𝕆𝕁</span> 诞生，全称“在相思树下的域”。后来陆续衍生出 <span class="bb">𝕄𝕋𝕆𝕁</span>、<span class="bb">𝕄𝕋𝕆𝕀</span> 等不明物种。</p>
-      </div>
-    </div>
-    <div class="tl-item reveal">
-      <div class="tl-dot"></div>
-      <div class="tl-body">
-        <h3><span class="bb">𝕄𝕋𝕆𝕀</span> 寄生 HexOJ</h3>
-        <p>如今 <span class="bb">𝕄𝕋𝕆𝕀</span> 也寄生于 HexOJ（oj.hex-c.uk）—— 一个可以自行注册的地方。</p>
+    <!-- 右：命名野史 -->
+    <div class="naming-card reveal">
+      <span class="kicker">NAMING</span>
+      <h2>命名野史</h2>
+      <p class="naming-sub">一个歧义直译，如何长成一堆不明物种。</p>
+      <div class="timeline">
+        <div class="tl-item warn">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <h3>“在相思树下的域”</h3>
+            <p><span class="bb">𝕄𝕋𝕆𝕁</span> 曾是站长在码力王国 / <a href="https://www.oi-coding.cn/" target="_blank" rel="noopener">oi-coding.cn</a> 盗取 SU 账号后创建的域。为了玩梗，把域名写成了“在相思树下的域”。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <h3>“Miss Tree OI”</h3>
+            <p>站长的同学 qzl / 千年生蚝精 首次提出这个概念 —— 显然是个有歧义的直译。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <h3>站长偏偏采用了它</h3>
+            <p>于是 <span class="bb">𝕄𝕋𝕆𝕁</span> 诞生，全称“在相思树下的域”。后来陆续衍生出 <span class="bb">𝕄𝕋𝕆𝕁</span>、<span class="bb">𝕄𝕋𝕆𝕀</span> 等不明物种。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <h3><span class="bb">𝕄𝕋𝕆𝕀</span> 寄生 HexOJ</h3>
+            <p>如今 <span class="bb">𝕄𝕋𝕆𝕀</span> 也寄生于 HexOJ（oj.hex-c.uk）—— 一个可以自行注册的地方。</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1368,7 +1369,6 @@
 (function () {
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- 导航 / 进度条 / 回到顶部 ---------- */
   var nav = document.getElementById('nav');
   var progressBar = document.getElementById('progressBar');
   var backTop = document.getElementById('backTop');
@@ -1388,7 +1388,6 @@
     window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   });
 
-  /* ---------- 鼠标聚光 ---------- */
   var spot = document.getElementById('spotlight');
   if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
     var sx = 0, sy = 0, cx = 0, cy = 0, spotActive = false;
@@ -1406,7 +1405,6 @@
     spot.style.display = 'none';
   }
 
-  /* ---------- Canvas 星点连线 ---------- */
   var canvas = document.getElementById('bgCanvas');
   if (!reduceMotion && canvas && canvas.getContext) {
     var ctx = canvas.getContext('2d');
@@ -1481,7 +1479,6 @@
     canvas.style.display = 'none';
   }
 
-  /* ---------- 滚动显现 + 错峰 ---------- */
   var revealEls = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var io = new IntersectionObserver(function (entries) {
@@ -1494,7 +1491,7 @@
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
     revealEls.forEach(function (el) { io.observe(el); });
 
-    document.querySelectorAll('.feature-grid, .contest-grid, .problem-grid, .gallery-grid, .info-grid, .timeline, .stats, .hero-side-cards').forEach(function (grid) {
+    document.querySelectorAll('.feature-grid, .contest-grid, .problem-grid, .gallery-grid, .info-grid, .stats, .hero-side-cards').forEach(function (grid) {
       Array.prototype.forEach.call(grid.children, function (el, i) {
         if (el.classList.contains('reveal')) {
           el.style.transitionDelay = (i * 70) + 'ms';
@@ -1505,7 +1502,6 @@
     revealEls.forEach(function (el) { el.classList.add('in'); });
   }
 
-  /* ---------- 数字滚动 ---------- */
   var counters = document.querySelectorAll('.stat-num[data-count]');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var cio = new IntersectionObserver(function (entries) {
@@ -1530,7 +1526,6 @@
     counters.forEach(function (c) { cio.observe(c); });
   }
 
-  /* ---------- 终端逐行 ---------- */
   var term = document.getElementById('terminal');
   if (term) {
     var lines = term.querySelectorAll('.term-line');
@@ -1550,7 +1545,6 @@
     }
   }
 
-  /* ---------- 诗歌逐行 ---------- */
   var poem = document.getElementById('poem-text');
   if (poem) {
     var poemLines = poem.querySelectorAll('.poem-line');
@@ -1570,7 +1564,6 @@
     }
   }
 
-  /* ---------- 卡片 3D 倾斜 + 光斑 ---------- */
   if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
     document.querySelectorAll('.tilt').forEach(function (card) {
       var rafId = null;
@@ -1608,7 +1601,6 @@
     });
   }
 
-  /* ---------- 导航 scroll spy ---------- */
   var navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
   var sections = [];
   navLinks.forEach(function (a) {
@@ -1628,7 +1620,6 @@
     sections.forEach(function (s) { sio.observe(s.sec); });
   }
 
-  /* ---------- 灯箱 ---------- */
   var lightbox = document.getElementById('lightbox');
   var lightboxImg = document.getElementById('lightboxImg');
   var lightboxCap = document.getElementById('lightboxCap');
