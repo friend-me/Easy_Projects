@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>€€￡ 和你巴巴博弈 · 科技对决</title>
+<title>€€￡ 和你巴巴博弈</title>
 <style>
-  /* ========== 全局 ========== */
   *,*::before,*::after{box-sizing:border-box;}
 
   body{
     margin:0;
     min-height:100vh;
     background-color:#05060a;
-    color:#ffffff; /* 全局文字改为纯白 */
+    color:#ffffff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
     font-size:16px;
     line-height:1.65;
@@ -20,7 +19,6 @@
     overflow-x:hidden;
   }
 
-  /* 赛博网格背景 */
   body::before{
     content:"";
     position:fixed; inset:0; z-index:0; pointer-events:none;
@@ -32,7 +30,6 @@
     background-size:auto,auto,48px 48px,48px 48px;
   }
 
-  /* 扫描线 */
   body::after{
     content:"";
     position:fixed; inset:0; z-index:0; pointer-events:none;
@@ -68,7 +65,6 @@
 
   .brand{display:flex; align-items:center; gap:15px; min-width:0;}
 
-  /* 头像：霓虹环 */
   .avatar{
     width:68px; height:68px; flex:none;
     border-radius:50%;
@@ -145,7 +141,6 @@
   .is-player .f-name{color:#00f0ff; text-shadow:0 0 10px rgba(0,240,255,.4);}
   .is-boss .f-name{color:#ff0066; text-shadow:0 0 10px rgba(255,0,102,.4);}
 
-  /* 数字和血量说明调亮 */
   .f-hp{font-family:ui-monospace,SFMono-Regular,monospace; font-size:14px; color:#cbd5e1; white-space:nowrap; font-weight:600;}
   .f-hp b{font-size:24px; font-weight:800; letter-spacing:-.02em;}
   .is-player .f-hp b{color:#00f0ff; text-shadow:0 0 14px rgba(0,240,255,.4);}
@@ -184,6 +179,10 @@
   .chip-move{color:#a78bfa; border-color:rgba(167,139,250,.4); background:rgba(167,139,250,.08); box-shadow:0 0 10px rgba(167,139,250,.12);}
   .chip-power{color:#fbbf24; border-color:rgba(251,191,36,.4); background:rgba(251,191,36,.08); box-shadow:0 0 10px rgba(251,191,36,.12);}
   .chip-lock{color:#ff0066; border-color:rgba(255,0,102,.4); background:rgba(255,0,102,.08); box-shadow:0 0 10px rgba(255,0,102,.12);}
+  .chip-o2{color:#fbbf24; border-color:rgba(251,191,36,.5); background:rgba(251,191,36,.1); box-shadow:0 0 10px rgba(251,191,36,.15);}
+  .chip-immune{color:#34d399; border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.08); box-shadow:0 0 10px rgba(52,211,153,.15);}
+  .chip-boot{color:#a78bfa; border-color:rgba(167,139,250,.4); background:rgba(167,139,250,.08);}
+  .chip-water{color:#38bdf8; border-color:rgba(56,189,248,.4); background:rgba(56,189,248,.08);}
 
   /* ========== 目标 ========== */
   .objectives{
@@ -195,7 +194,6 @@
     display:flex; flex-direction:column; gap:18px;
   }
   .obj{display:flex; flex-direction:column; gap:10px;}
-  /* 目标标签调亮 */
   .obj-label{
     display:flex; align-items:center; justify-content:space-between; gap:8px;
     font-size:13.5px; font-weight:700; color:#ffffff; letter-spacing:.06em;
@@ -224,6 +222,122 @@
     box-shadow:0 0 14px rgba(0,240,255,.4);
   }
 
+  /* ========== 科技面板 ========== */
+  .tech-panel{
+    padding:18px 20px;
+    border-radius:12px;
+    background:rgba(10,14,22,.8);
+    border:1px solid rgba(251,191,36,.15);
+    box-shadow:0 0 20px rgba(0,0,0,.4), inset 0 0 32px rgba(251,191,36,.02);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .tech-title{
+    display:flex; align-items:center; gap:10px;
+    font-size:12px; font-weight:800; letter-spacing:.18em;
+    color:#fbbf24;
+    text-transform:uppercase;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(251,191,36,.15);
+  }
+  .tech-title::before{
+    content:""; width:6px; height:6px; border-radius:50%;
+    background:#fbbf24;
+    box-shadow:0 0 10px #fbbf24, 0 0 20px #fbbf24;
+  }
+
+  .o2-row{
+    display:flex; align-items:center; gap:14px;
+    padding:12px 16px;
+    background:rgba(251,191,36,.04);
+    border:1px solid rgba(251,191,36,.2);
+    border-radius:8px;
+  }
+  .o2-label{font-size:14px; font-weight:800; color:#fbbf24; white-space:nowrap; letter-spacing:.05em;}
+  .o2-bar{
+    flex:1; height:10px;
+    background:rgba(255,255,255,.06);
+    border-radius:99px;
+    overflow:hidden;
+    border:1px solid rgba(251,191,36,.2);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.6);
+  }
+  .o2-fill{
+    height:100%;
+    background:linear-gradient(90deg,#f59e0b,#fbbf24,#fde68a);
+    box-shadow:0 0 12px rgba(251,191,36,.6);
+    border-radius:99px;
+    transition:width .5s cubic-bezier(.22,1,.36,1);
+  }
+  .o2-val{
+    font-family:ui-monospace,monospace; font-size:16px; font-weight:800;
+    color:#fbbf24; text-shadow:0 0 10px rgba(251,191,36,.5);
+    min-width:40px; text-align:right;
+  }
+
+  .tech-row{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:12px;
+    align-items:center;
+    padding:12px 16px;
+    background:rgba(255,255,255,.02);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:8px;
+  }
+  .tech-name{font-size:14px; font-weight:800; color:#ffffff; white-space:nowrap;}
+  .tech-info{
+    display:flex; flex-direction:column; gap:2px;
+    font-size:12.5px; color:#cbd5e1;
+  }
+  .tech-info .lv{font-weight:700; color:#00f0ff; text-shadow:0 0 6px rgba(0,240,255,.3);}
+  .tech-info .eff{color:#94a3b8; font-size:12px;}
+
+  .tech-btn{
+    padding:6px 14px;
+    border-radius:6px;
+    border:1px solid rgba(0,240,255,.4);
+    background:linear-gradient(180deg, rgba(0,240,255,.12), rgba(0,240,255,.02));
+    color:#00f0ff;
+    font-family:inherit;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    transition:all .15s;
+    box-shadow:0 3px 0 rgba(0,240,255,.15);
+    white-space:nowrap;
+  }
+  .tech-btn:hover:not(:disabled){
+    background:linear-gradient(180deg, rgba(0,240,255,.25), rgba(0,240,255,.05));
+    box-shadow:0 3px 0 rgba(0,240,255,.3), 0 0 16px rgba(0,240,255,.2);
+  }
+  .tech-btn:active:not(:disabled){
+    transform:translateY(3px);
+    box-shadow:0 0 0 rgba(0,240,255,.15);
+  }
+  .tech-btn:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+    box-shadow:0 2px 0 rgba(0,0,0,.3);
+  }
+  .tech-btn.o2-btn{
+    border-color:rgba(251,191,36,.5);
+    background:linear-gradient(180deg, rgba(251,191,36,.15), rgba(251,191,36,.02));
+    color:#fbbf24;
+    box-shadow:0 3px 0 rgba(251,191,36,.15);
+    font-size:13px;
+    padding:8px 14px;
+  }
+  .tech-btn.o2-btn:hover:not(:disabled){
+    background:linear-gradient(180deg, rgba(251,191,36,.3), rgba(251,191,36,.06));
+    box-shadow:0 3px 0 rgba(251,191,36,.3), 0 0 16px rgba(251,191,36,.25);
+  }
+  .tech-btn.o2-btn.active{
+    background:linear-gradient(180deg, rgba(251,191,36,.4), rgba(251,191,36,.1));
+    border-color:#fbbf24;
+    color:#fff;
+    text-shadow:0 0 10px rgba(251,191,36,.6);
+  }
+
   /* ========== 日志 ========== */
   .log-panel{
     border-radius:12px;
@@ -248,7 +362,7 @@
     box-shadow:0 0 10px #00f0ff, 0 0 20px #00f0ff;
   }
   .log{
-    height:320px;
+    height:300px;
     overflow-y:auto;
     padding:16px 20px;
     display:flex; flex-direction:column; gap:6px;
@@ -258,7 +372,6 @@
   .log::-webkit-scrollbar{width:6px;}
   .log::-webkit-scrollbar-thumb{background:rgba(0,240,255,.3); border-radius:99px;}
 
-  /* 核心修改：日志正文全部提亮 */
   .log-line{
     padding-left:14px; border-left:2px solid transparent; color:#f1f5f9;
     animation:fadeIn .2s ease;
@@ -274,7 +387,7 @@
   .log-line.bossline{color:#fda4af; font-weight:700; text-shadow:0 0 8px rgba(255,0,102,.3);}
   .dmg{color:#ff4d79; font-weight:800; font-family:ui-monospace,monospace; font-size:16px; text-shadow:0 0 8px rgba(255,0,102,.4);}
 
-  /* ========== 立体按钮（赛博朋克） ========== */
+  /* ========== 立体按钮 ========== */
   .actions{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
@@ -293,14 +406,12 @@
     overflow:hidden;
     letter-spacing:.03em;
   }
-  /* 按钮说明文字提亮 */
   .btn small{
     font-size:12.5px; font-weight:500;
     color:rgba(255,255,255,.85); line-height:1.45;
     letter-spacing:.02em;
   }
 
-  /* 按钮共享的扫描线 */
   .btn::after{
     content:"";
     position:absolute; inset:0;
@@ -309,109 +420,84 @@
     opacity:.4;
   }
 
-  /* 青蓝按钮（玩家） */
   .btn.btn-cyan{
     background:linear-gradient(180deg,rgba(0,240,255,.18),rgba(0,240,255,.04));
     border-color:rgba(0,240,255,.5);
     color:#00f0ff;
     text-shadow:0 0 10px rgba(0,240,255,.3);
-    box-shadow:
-      0 6px 0 rgba(0,240,255,.15),
-      0 10px 24px -4px rgba(0,240,255,.18),
-      inset 0 1px 1px rgba(255,255,255,.15);
+    box-shadow:0 6px 0 rgba(0,240,255,.15), 0 10px 24px -4px rgba(0,240,255,.18), inset 0 1px 1px rgba(255,255,255,.15);
   }
   .btn.btn-cyan:hover:not(:disabled){
     background:linear-gradient(180deg,rgba(0,240,255,.3),rgba(0,240,255,.08));
-    box-shadow:
-      0 6px 0 rgba(0,240,255,.25),
-      0 12px 32px -4px rgba(0,240,255,.3),
-      inset 0 1px 1px rgba(255,255,255,.25);
+    box-shadow:0 6px 0 rgba(0,240,255,.25), 0 12px 32px -4px rgba(0,240,255,.3), inset 0 1px 1px rgba(255,255,255,.25);
   }
   .btn.btn-cyan:active:not(:disabled){
     transform:translateY(6px);
-    box-shadow:
-      0 0 0 rgba(0,240,255,.15),
-      0 2px 8px rgba(0,240,255,.15),
-      inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 0 0 rgba(0,240,255,.15), 0 2px 8px rgba(0,240,255,.15), inset 0 1px 2px rgba(0,0,0,.3);
   }
 
-  /* 赤红按钮（Boss） */
   .btn.btn-crimson{
     background:linear-gradient(180deg,rgba(255,0,102,.18),rgba(255,0,102,.04));
     border-color:rgba(255,0,102,.5);
     color:#ff0066;
     text-shadow:0 0 10px rgba(255,0,102,.3);
-    box-shadow:
-      0 6px 0 rgba(255,0,102,.15),
-      0 10px 24px -4px rgba(255,0,102,.18),
-      inset 0 1px 1px rgba(255,255,255,.15);
+    box-shadow:0 6px 0 rgba(255,0,102,.15), 0 10px 24px -4px rgba(255,0,102,.18), inset 0 1px 1px rgba(255,255,255,.15);
   }
   .btn.btn-crimson:hover:not(:disabled){
     background:linear-gradient(180deg,rgba(255,0,102,.3),rgba(255,0,102,.08));
-    box-shadow:
-      0 6px 0 rgba(255,0,102,.25),
-      0 12px 32px -4px rgba(255,0,102,.3),
-      inset 0 1px 1px rgba(255,255,255,.25);
+    box-shadow:0 6px 0 rgba(255,0,102,.25), 0 12px 32px -4px rgba(255,0,102,.3), inset 0 1px 1px rgba(255,255,255,.25);
   }
   .btn.btn-crimson:active:not(:disabled){
     transform:translateY(6px);
-    box-shadow:
-      0 0 0 rgba(255,0,102,.15),
-      0 2px 8px rgba(255,0,102,.15),
-      inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 0 0 rgba(255,0,102,.15), 0 2px 8px rgba(255,0,102,.15), inset 0 1px 2px rgba(0,0,0,.3);
   }
 
-  /* 幽绿按钮（吃饭/恢复） */
   .btn.btn-neon{
     background:linear-gradient(180deg,rgba(0,255,170,.15),rgba(0,255,170,.03));
     border-color:rgba(0,255,170,.45);
     color:#00ffaa;
     text-shadow:0 0 10px rgba(0,255,170,.3);
-    box-shadow:
-      0 6px 0 rgba(0,255,170,.12),
-      0 10px 24px -4px rgba(0,255,170,.15),
-      inset 0 1px 1px rgba(255,255,255,.12);
+    box-shadow:0 6px 0 rgba(0,255,170,.12), 0 10px 24px -4px rgba(0,255,170,.15), inset 0 1px 1px rgba(255,255,255,.12);
   }
   .btn.btn-neon:hover:not(:disabled){
     background:linear-gradient(180deg,rgba(0,255,170,.28),rgba(0,255,170,.07));
-    box-shadow:
-      0 6px 0 rgba(0,255,170,.22),
-      0 12px 32px -4px rgba(0,255,170,.25),
-      inset 0 1px 1px rgba(255,255,255,.2);
+    box-shadow:0 6px 0 rgba(0,255,170,.22), 0 12px 32px -4px rgba(0,255,170,.25), inset 0 1px 1px rgba(255,255,255,.2);
   }
   .btn.btn-neon:active:not(:disabled){
     transform:translateY(6px);
-    box-shadow:
-      0 0 0 rgba(0,255,170,.12),
-      0 2px 8px rgba(0,255,170,.12),
-      inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 0 0 rgba(0,255,170,.12), 0 2px 8px rgba(0,255,170,.12), inset 0 1px 2px rgba(0,0,0,.3);
   }
 
-  /* 重新开始 */
+  .btn.btn-purple{
+    background:linear-gradient(180deg,rgba(167,139,250,.18),rgba(167,139,250,.04));
+    border-color:rgba(167,139,250,.5);
+    color:#a78bfa;
+    text-shadow:0 0 10px rgba(167,139,250,.3);
+    box-shadow:0 6px 0 rgba(167,139,250,.15), 0 10px 24px -4px rgba(167,139,250,.18), inset 0 1px 1px rgba(255,255,255,.15);
+  }
+  .btn.btn-purple:hover:not(:disabled){
+    background:linear-gradient(180deg,rgba(167,139,250,.3),rgba(167,139,250,.08));
+    box-shadow:0 6px 0 rgba(167,139,250,.25), 0 12px 32px -4px rgba(167,139,250,.3), inset 0 1px 1px rgba(255,255,255,.25);
+  }
+  .btn.btn-purple:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:0 0 0 rgba(167,139,250,.15), 0 2px 8px rgba(167,139,250,.15), inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
   .btn.restart{
     grid-column:1/-1; align-items:center; text-align:center;
     background:linear-gradient(180deg,rgba(167,139,250,.18),rgba(167,139,250,.04));
     border-color:rgba(167,139,250,.5);
     color:#a78bfa;
     text-shadow:0 0 10px rgba(167,139,250,.3);
-    box-shadow:
-      0 6px 0 rgba(167,139,250,.15),
-      0 10px 24px -4px rgba(167,139,250,.18),
-      inset 0 1px 1px rgba(255,255,255,.15);
+    box-shadow:0 6px 0 rgba(167,139,250,.15), 0 10px 24px -4px rgba(167,139,250,.18), inset 0 1px 1px rgba(255,255,255,.15);
   }
   .btn.restart:hover:not(:disabled){
     background:linear-gradient(180deg,rgba(167,139,250,.3),rgba(167,139,250,.08));
-    box-shadow:
-      0 6px 0 rgba(167,139,250,.25),
-      0 12px 32px -4px rgba(167,139,250,.3),
-      inset 0 1px 1px rgba(255,255,255,.25);
   }
   .btn.restart:active:not(:disabled){
     transform:translateY(6px);
-    box-shadow:
-      0 0 0 rgba(167,139,250,.15),
-      0 2px 8px rgba(167,139,250,.15),
-      inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 0 0 rgba(167,139,250,.15), 0 2px 8px rgba(167,139,250,.15);
   }
 
   .btn:disabled{
@@ -422,16 +508,12 @@
     filter:grayscale(.7);
   }
 
-  /* 选择题按钮（中性） */
   .btn.choice{
     align-items:center; justify-content:center; text-align:center;
     background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
     border-color:rgba(255,255,255,.35);
     color:#ffffff;
-    box-shadow:
-      0 6px 0 rgba(255,255,255,.08),
-      0 10px 24px -4px rgba(0,0,0,.5),
-      inset 0 1px 1px rgba(255,255,255,.15);
+    box-shadow:0 6px 0 rgba(255,255,255,.08), 0 10px 24px -4px rgba(0,0,0,.5), inset 0 1px 1px rgba(255,255,255,.15);
   }
   .btn.choice:hover:not(:disabled){
     border-color:#00f0ff;
@@ -440,18 +522,18 @@
   }
   .btn.choice:active:not(:disabled){
     transform:translateY(6px);
-    box-shadow:
-      0 0 0 rgba(255,255,255,.06),
-      0 2px 8px rgba(0,0,0,.3),
-      inset 0 1px 2px rgba(0,0,0,.3);
+    box-shadow:0 0 0 rgba(255,255,255,.06), 0 2px 8px rgba(0,0,0,.3);
   }
 
   @media (max-width:480px){
     .app{padding:16px 12px 40px;}
     .brand-text h1{font-size:20px;}
     .avatar{width:56px; height:56px;}
-    .log{height:280px;}
+    .log{height:260px;}
     .actions{grid-template-columns:1fr;}
+    .tech-row{grid-template-columns:1fr; gap:8px;}
+    .tech-btn{justify-self:start;}
+    .o2-row{flex-wrap:wrap;}
   }
 </style>
 </head>
@@ -505,6 +587,35 @@
     </div>
   </section>
 
+  <section class="tech-panel">
+    <div class="tech-title">科技树 / TECH</div>
+
+    <div class="o2-row">
+      <span class="o2-label">O₂ 氧气罐</span>
+      <div class="o2-bar"><div class="o2-fill" id="o2Fill" style="width:100%"></div></div>
+      <span class="o2-val" id="o2Text">50</span>
+      <button class="tech-btn o2-btn" id="o2Btn">O₂ 优化 (-10)</button>
+    </div>
+
+    <div class="tech-row">
+      <span class="tech-name">二叉树</span>
+      <div class="tech-info">
+        <span class="lv" id="treeName">Lv.0 根节点</span>
+        <span class="eff" id="treeEff">无效果</span>
+      </div>
+      <button class="tech-btn" id="treeUp">升级 (-10 HP)</button>
+    </div>
+
+    <div class="tech-row">
+      <span class="tech-name">数据结构</span>
+      <div class="tech-info">
+        <span class="lv" id="dsName">Lv.0 全局数组</span>
+        <span class="eff" id="dsEff">无效果</span>
+      </div>
+      <button class="tech-btn" id="dsUp">升级 (-10 HP)</button>
+    </div>
+  </section>
+
   <section class="log-panel">
     <div class="log-head"><span>战况记录 // LOG</span></div>
     <div class="log" id="log"></div>
@@ -522,6 +633,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const ZS = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];
 const HW = [1,2,3,4,5,6,7,8,9,11,22,33,44,55,66,77,88,99,111,121,131,141];
 
+const TREE_NAMES = ['根节点', '叶子节点', '斜二叉树', '二叉搜索树', '完全二叉树', '满二叉树'];
+const TREE_BONUS = [0, 1, 2, 4, 8, 16];
+const DS_NAMES = ['全局数组', '树状数组', '线段树', 'Trie 树', '主席树', '树套树'];
+const DS_BONUS = [0, 1, 2, 3, 5, 8];
+
 /* ================= DOM ================= */
 const logEl        = document.getElementById('log');
 const actionsEl    = document.getElementById('actions');
@@ -537,6 +653,16 @@ const bossStatus   = document.getElementById('bossStatus');
 const crystalsEl   = document.getElementById('crystals');
 const turnNum      = document.getElementById('turnNum');
 
+const o2Fill  = document.getElementById('o2Fill');
+const o2Text  = document.getElementById('o2Text');
+const o2Btn   = document.getElementById('o2Btn');
+const treeName = document.getElementById('treeName');
+const treeEff  = document.getElementById('treeEff');
+const treeUp   = document.getElementById('treeUp');
+const dsName   = document.getElementById('dsName');
+const dsEff    = document.getElementById('dsEff');
+const dsUp     = document.getElementById('dsUp');
+
 /* ================= 状态 ================= */
 let S = null;
 let busy = false;
@@ -547,11 +673,32 @@ function log(msg, cls=''){
   d.className = 'log-line' + (cls ? ' ' + cls : '');
   d.innerHTML = msg;
   logEl.appendChild(d);
-  while (logEl.childElementCount > 400) logEl.removeChild(logEl.firstChild);
+  while (logEl.childElementCount > 500) logEl.removeChild(logEl.firstChild);
   logEl.scrollTop = logEl.scrollHeight;
 }
 
-/* ================= 刷新界面 ================= */
+/* ================= 伤害计算 ================= */
+function damageCCF(base) {
+  let d = base;
+  if (S.o2Boost) d *= 2;
+  S.hpC -= d;
+  return d;
+}
+function damagePlayer(base) {
+  let d = base;
+  if (S.o2Boost) d = Math.floor(d / 2);
+  S.hpN -= d;
+  return d;
+}
+function ccfDamagePlayer(base) {
+  if (S.immune > 0) {
+    S.immune--;
+    return 0;
+  }
+  return damagePlayer(base);
+}
+
+/* ================= 界面刷新 ================= */
 function updateUI(){
   const hpN = Math.max(0, Math.round(S.hpN));
   playerHpNum.textContent = hpN;
@@ -568,7 +715,6 @@ function updateUI(){
   subwayFill.style.width = Math.max(0, Math.min(100, dtv / 50 * 100)) + '%';
 
   crystalCount.textContent = `${S.sj} / 8`;
-
   crystalsEl.innerHTML = '';
   for (let i = 0; i < 8; i++){
     const c = document.createElement('div');
@@ -576,18 +722,174 @@ function updateUI(){
     crystalsEl.appendChild(c);
   }
 
-  playerStatus.innerHTML = S.bd > 0 ? '<span class="chip chip-ice">冰冻</span>' : '';
+  // 玩家状态
+  let ps = '';
+  if (S.bd > 0) ps += '<span class="chip chip-ice">冰冻</span>';
+  if (S.o2Boost) ps += '<span class="chip chip-o2">O₂优化</span>';
+  if (S.immune > 0) ps += `<span class="chip chip-immune">免疫 ${S.immune}</span>`;
+  if (S.bootcampCountdown > 0) ps += `<span class="chip chip-boot">集训 ${S.bootcampCountdown}</span>`;
+  if (S.waterStop > 0) ps += `<span class="chip chip-water">停水 ${S.waterStop}</span>`;
+  playerStatus.innerHTML = ps;
 
+  // CCF 状态
   let bs = '';
-  if (S.qx > 0)      bs += '<span class="chip chip-move">迁徙中</span>';
-  if (S.ll > 0)      bs += '<span class="chip chip-power">力量蓄势</span>';
+  if (S.qx > 0) bs += '<span class="chip chip-move">迁徙中</span>';
+  if (S.ll > 0) bs += '<span class="chip chip-power">力量蓄势</span>';
   if (S.phase === 1) bs += '<span class="chip chip-lock">无限回复 · 闪避</span>';
   bossStatus.innerHTML = bs;
 
   turnNum.textContent = S.turn;
+
+  // 科技
+  o2Text.textContent = S.o2;
+  o2Fill.style.width = Math.min(100, (S.o2 / 100) * 100) + '%';
+
+  treeName.textContent = `Lv.${S.treeLv} ${TREE_NAMES[S.treeLv]}`;
+  treeEff.textContent = TREE_BONUS[S.treeLv] > 0
+    ? `每回合 +${TREE_BONUS[S.treeLv]} HP`
+    : '无效果';
+  if (S.treeLv >= 5) {
+    treeUp.textContent = '已满级';
+    treeUp.disabled = true;
+  } else {
+    const cost = (S.treeLv + 1) * 10;
+    treeUp.textContent = `升级 (-${cost} HP)`;
+    treeUp.disabled = S.hpN <= cost || S.over || S.phase === 1 && false || busy;
+  }
+
+  dsName.textContent = `Lv.${S.dsLv} ${DS_NAMES[S.dsLv]}`;
+  dsEff.textContent = DS_BONUS[S.dsLv] > 0
+    ? `每回合 +${DS_BONUS[S.dsLv]} O₂`
+    : '无效果';
+  if (S.dsLv >= 5) {
+    dsUp.textContent = '已满级';
+    dsUp.disabled = true;
+  } else {
+    const cost = (S.dsLv + 1) * 10;
+    dsUp.textContent = `升级 (-${cost} HP)`;
+    dsUp.disabled = S.hpN <= cost || S.over || busy;
+  }
+
+  // O2 按钮
+  if (S.o2Boost) {
+    o2Btn.textContent = 'O₂ 优化中';
+    o2Btn.classList.add('active');
+    o2Btn.disabled = true;
+  } else {
+    o2Btn.textContent = 'O₂ 优化 (-10)';
+    o2Btn.classList.remove('active');
+    o2Btn.disabled = S.o2 < 10 || S.over || busy;
+  }
 }
 
-/* ================= 按钮 ================= */
+/* ================= 升级 ================= */
+function upgradeTree() {
+  if (!S || S.over || busy) return;
+  if (S.treeLv >= 5) return;
+  const cost = (S.treeLv + 1) * 10;
+  if (S.hpN <= cost) {
+    log(`HP 不足，无法升级二叉树（需要 ${cost} HP）。`, 'warn');
+    return;
+  }
+  S.hpN -= cost;
+  S.treeLv++;
+  log(`二叉树升级为 Lv.${S.treeLv} <b>${TREE_NAMES[S.treeLv]}</b>（-${cost} HP，每回合 +${TREE_BONUS[S.treeLv]} HP）。`, 'good');
+  updateUI();
+}
+
+function upgradeDS() {
+  if (!S || S.over || busy) return;
+  if (S.dsLv >= 5) return;
+  const cost = (S.dsLv + 1) * 10;
+  if (S.hpN <= cost) {
+    log(`HP 不足，无法升级数据结构（需要 ${cost} HP）。`, 'warn');
+    return;
+  }
+  S.hpN -= cost;
+  S.dsLv++;
+  log(`数据结构升级为 Lv.${S.dsLv} <b>${DS_NAMES[S.dsLv]}</b>（-${cost} HP，每回合 +${DS_BONUS[S.dsLv]} O₂）。`, 'good');
+  updateUI();
+}
+
+function useO2() {
+  if (!S || S.over || busy) return;
+  if (S.o2 < 10) {
+    log('氧气不足（需要 10 O₂）。', 'warn');
+    return;
+  }
+  if (S.o2Boost) return;
+  S.o2 -= 10;
+  S.o2Boost = true;
+  log('O₂ 优化启动！本回合对 €€￡ 造成的伤害 ×2，自身受到的伤害 ÷2。', 'good');
+  updateUI();
+}
+
+treeUp.onclick = upgradeTree;
+dsUp.onclick = upgradeDS;
+o2Btn.onclick = useO2;
+
+/* ================= 生产 ================= */
+function produce() {
+  if (S.waterStop > 0) {
+    S.waterStop--;
+    log(`停水生效中，所有树和数据结构暂停生产（剩余 ${S.waterStop} 回合）。`, 'warn');
+    return;
+  }
+  const tb = TREE_BONUS[S.treeLv];
+  const db = DS_BONUS[S.dsLv];
+  if (tb > 0) {
+    const before = S.hpN;
+    S.hpN = Math.min(150, S.hpN + tb);
+    const gain = Math.max(0, Math.round(S.hpN - before));
+    if (gain > 0) log(`二叉树产出：回复 ${gain} HP（Lv.${S.treeLv}）。`, 'good');
+    else log(`二叉树产出：血量已满（Lv.${S.treeLv}）。`, 'sys');
+  }
+  if (db > 0) {
+    S.o2 += db;
+    log(`数据结构光合作用：O₂ +${db}（Lv.${S.dsLv}）。`, 'good');
+  }
+}
+
+/* ================= 回合开始 ================= */
+function startOfPlayerTurn() {
+  if (S.bootcampCountdown > 0) {
+    S.bootcampCountdown--;
+    if (S.bootcampCountdown === 0) {
+      // 生效
+      const o2Gain = Math.max(0, Math.floor(Math.log2(Math.max(1, S.o2))));
+      const ccfDmg = Math.max(0, Math.floor(Math.log2(Math.max(1, Math.round(S.hpC)))));
+      S.hpN = Math.min(150, S.hpN + 50);
+      S.o2 += o2Gain;
+      S.hpC -= ccfDmg;
+      log(`【集训成果】血量 +50，O₂ +${o2Gain}（log₂${S.o2}），€€￡ -${ccfDmg} HP。`, 'good');
+      updateUI();
+      if (S.hpC <= 0) { winGame(); return; }
+    }
+  }
+  updateUI();
+}
+
+/* ================= 胜负 ================= */
+function checkDead(){
+  if (S.hpN <= 0 && !S.over){
+    S.over = true;
+    S.hpN = 0;
+    updateUI();
+    log('你输了游戏，被 €€￡ 夺走了所有的钱。', 'bad');
+    log('游戏结束', 'title');
+    return true;
+  }
+  return false;
+}
+function winGame(){
+  S.over = true;
+  S.hpC = Math.max(0, S.hpC);
+  updateUI();
+  log('你击败了 €€￡！你赢了游戏，守护了你的钱。', 'good');
+  log('游戏结束', 'title');
+}
+
+/* ================= 按钮渲染 ================= */
 function setButtonsDisabled(v){
   actionsEl.querySelectorAll('button').forEach(b => b.disabled = v);
 }
@@ -605,9 +907,12 @@ function makeHandler(fn){
     if (busy || !S || S.over) return;
     busy = true;
     setButtonsDisabled(true);
-    try { await fn(); } catch(e){ console.error(e); }
+    try {
+      startOfPlayerTurn();
+      if (S.over) { busy = false; renderActions(); updateUI(); return; }
+      await fn();
+    } catch(e){ console.error(e); }
     busy = false;
-    if (!S.over) S.turn++;
     renderActions();
     updateUI();
   };
@@ -615,7 +920,6 @@ function makeHandler(fn){
 
 function renderActions(){
   actionsEl.innerHTML = '';
-
   if (S.over){
     const b = document.createElement('button');
     b.className = 'btn restart';
@@ -633,6 +937,8 @@ function renderActions(){
     addAction('普通攻击',     '对 €€￡ 造成 25~40 伤害',            'btn-cyan', () => secondPhaseAct(1));
     addAction('暴戾语言',     '60% 造成 50 伤害 ／ 40% 自身受 100',  'btn-crimson', () => secondPhaseAct(2));
     addAction('吃饭',         '50% 回 35 ／ 10% 扣 10 ／ 40% 回 60', 'btn-neon', () => secondPhaseAct(3));
+    addAction('集训',         '消耗 25 HP，2回合后：+50 HP，O₂ & 对 CCF 造成 log₂ 伤害', 'btn-purple', () => secondPhaseAct(4));
+    addAction('考级',         '消耗 40 HP，50% 无事发生 ／ 50% 后两回合 CCF 伤害无效', 'btn-purple', () => secondPhaseAct(5));
   }
 }
 
@@ -653,41 +959,24 @@ function askChoice(labels){
   });
 }
 
-/* ================= 判定 ================= */
-function checkDead(){
-  if (S.hpN <= 0 && !S.over){
-    S.over = true;
-    S.hpN = 0;
-    updateUI();
-    log('你输了游戏，被 €€￡ 夺走了所有的钱。', 'bad');
-    log('游戏结束', 'title');
-    return true;
-  }
-  return false;
-}
-
-function winGame(){
-  S.over = true;
-  S.hpC = Math.max(0, S.hpC);
-  updateUI();
-  log('你击败了 €€￡！你赢了游戏，守护了你的钱。', 'good');
-  log('游戏结束', 'title');
-}
-
 /* ================= 吃饭 ================= */
 async function doEat(){
   const r = rnd(0, 9);
   if (r <= 4){
+    const before = S.hpN;
     S.hpN = Math.min(150, S.hpN + 35);
-    log(`你吃了一份普通的食物，恢复了 35 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
+    const gain = Math.round(S.hpN - before);
+    log(`你吃了一份普通的食物，恢复了 ${gain} 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
   } else if (r === 5){
     S.hpN -= 10;
     log(`你吃了一份发霉的食物，扣除了 10 点血量。你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
     updateUI();
     if (checkDead()) return true;
   } else {
+    const before = S.hpN;
     S.hpN = Math.min(150, S.hpN + 60);
-    log(`你吃了一份绝世美味，恢复了 60 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
+    const gain = Math.round(S.hpN - before);
+    log(`你吃了一份绝世美味，恢复了 ${gain} 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
   }
   updateUI();
   await sleep(320);
@@ -702,13 +991,12 @@ async function firstPhaseAct(op){
     } else {
       S.sj--;
       const dmg = rnd(5, 20);
-      S.hpN -= dmg;
-      log(`1 个能量水晶被你摧毁，剩余 ${S.sj} 个水晶。爆炸对你造成了 <span class="dmg">${dmg}</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'good');
+      const real = damagePlayer(dmg);
+      log(`1 个能量水晶被你摧毁，剩余 ${S.sj} 个水晶。爆炸对你造成了 <span class="dmg">${real}</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'good');
     }
     updateUI();
     if (checkDead()) return;
     await sleep(320);
-
   } else if (op === 2){
     if (S.dt <= 0){
       log('地铁已经没了！你浪费了一个回合。', 'warn');
@@ -723,15 +1011,20 @@ async function firstPhaseAct(op){
     }
     updateUI();
     await sleep(320);
-
   } else {
     const dead = await doEat();
     if (dead) return;
   }
 
+  produce();
+
   const dmg = rnd(10, 20);
-  S.hpN -= dmg;
-  log(`€€￡ 对你发动了普攻，对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+  const real = ccfDamagePlayer(dmg);
+  if (real === 0) {
+    log(`€€￡ 对你发动了普攻，但你的免疫生效，伤害无效！`, 'good');
+  } else {
+    log(`€€￡ 对你发动了普攻，对你造成了 <span class="dmg">${real}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+  }
   updateUI();
   await sleep(360);
   if (checkDead()) return;
@@ -744,9 +1037,11 @@ async function firstPhaseAct(op){
     updateUI();
     await sleep(420);
   }
+
+  await endTurnReset();
 }
 
-/* ================= 第二阶段：玩家 ================= */
+/* ================= 第二阶段 ================= */
 async function secondPhaseAct(op){
   if (op === 1){
     await playerNormalAttack();
@@ -754,15 +1049,22 @@ async function secondPhaseAct(op){
   } else if (op === 2){
     await playerTaunt();
     if (S.over) return;
-  } else {
+  } else if (op === 3){
     const dead = await doEat();
     if (dead) return;
+  } else if (op === 4){
+    await playerBootcamp();
+    if (S.over) return;
+  } else if (op === 5){
+    await playerExam();
+    if (S.over) return;
   }
 
   S.bd = 0;
   updateUI();
   await sleep(220);
   await bossTurn();
+  await endTurnReset();
 }
 
 async function playerNormalAttack(){
@@ -772,107 +1074,176 @@ async function playerNormalAttack(){
     await sleep(320);
     return;
   }
-
   let dmg = rnd(25, 40);
-  const frozen = S.bd > 0;
-  if (frozen) dmg = Math.floor(dmg / 2);
-
-  S.hpC -= dmg;
-  log(frozen
-    ? `你处于冰冻状态。你对 €€￡ 发动了普攻，造成了 <span class="dmg">${dmg}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`
-    : `你对 €€￡ 发动了普攻，造成了 <span class="dmg">${dmg}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`,
+  if (S.bd > 0) dmg = Math.floor(dmg / 2);
+  const real = damageCCF(dmg);
+  log(S.bd > 0
+    ? `你处于冰冻状态。你对 €€￡ 发动了普攻，造成了 <span class="dmg">${real}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`
+    : `你对 €€￡ 发动了普攻，造成了 <span class="dmg">${real}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`,
     'good');
   updateUI();
   await sleep(360);
-
   if (S.hpC <= 0) winGame();
 }
 
 async function playerTaunt(){
   const success = Math.random() < 0.6;
-
   if (success){
     if (S.qx > 0){
       log('€€￡ 处于迁徙态，你的暴戾语言落空了！', 'warn');
-    } else if (S.bd > 0){
-      S.hpC -= 25;
-      log(`你处于冰冻状态。你对 €€￡ 发动了暴戾语言，造成了 <span class="dmg">25</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`, 'good');
     } else {
-      S.hpC -= 50;
-      log(`你对 €€￡ 发动了暴戾语言，暴击 €€￡！造成了 <span class="dmg">50</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`, 'good');
+      let base = S.bd > 0 ? 25 : 50;
+      const real = damageCCF(base);
+      log(S.bd > 0
+        ? `你处于冰冻状态。你对 €€￡ 发动了暴戾语言，造成了 <span class="dmg">${real}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`
+        : `你对 €€￡ 发动了暴戾语言，暴击 €€￡！造成了 <span class="dmg">${real}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`,
+        'good');
     }
     updateUI();
     await sleep(360);
     if (S.hpC <= 0) winGame();
   } else {
-    S.hpN -= 100;
-    log(`你对 €€￡ 发动了暴戾语言，被 €€￡ 禁赛了！你受到了 <span class="dmg">100</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    const real = damagePlayer(100);
+    log(`你对 €€￡ 发动了暴戾语言，被 €€￡ 禁赛了！你受到了 <span class="dmg">${real}</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
     updateUI();
     await sleep(360);
     checkDead();
   }
 }
 
-/* ================= 第二阶段：BOSS ================= */
+async function playerBootcamp(){
+  if (S.hpN <= 25) {
+    log('HP 不足 25，无法使用集训。', 'warn');
+    await sleep(300);
+    return;
+  }
+  S.hpN -= 25;
+  S.bootcampCountdown = 2;
+  log('你开始集训！消耗 25 HP，两个回合后获得 50 HP，并产生 O₂ 和对 €€￡ 的 log₂ 伤害。', 'good');
+  updateUI();
+  await sleep(320);
+}
+
+async function playerExam(){
+  if (S.hpN <= 40) {
+    log('HP 不足 40，无法使用考级。', 'warn');
+    await sleep(300);
+    return;
+  }
+  S.hpN -= 40;
+  if (Math.random() < 0.5) {
+    log('你参加了考级……结果失败了，无事发生（消耗 40 HP）。', 'bad');
+  } else {
+    S.immune = 2;
+    log('你通过了考级！接下来两回合 CCF 对你造成的伤害无效。', 'good');
+  }
+  updateUI();
+  await sleep(360);
+}
+
+/* ================= BOSS 回合 ================= */
 async function bossTurn(){
   log('现在 €€￡ 开始行动！', 'sys');
   await sleep(260);
 
-  const op = rnd(1, 4);
+  const r = rnd(1, 20);
+  let skill;
+  if (r <= 4) skill = 'card';
+  else if (r <= 8) skill = 'pal';
+  else if (r <= 11) skill = 'mig';
+  else if (r <= 15) skill = 'quiz1';
+  else if (r <= 18) skill = 'quiz2';
+  else if (r === 19) skill = 'water';
+  else skill = 'check';
 
-  if (op === 1){
+  if (skill === 'card'){
     const i = rnd(0, ZS.length - 1);
-    const dmg = ZS[i];
-    S.hpN -= dmg;
-    log(`€€￡ 对你使用了「纸牌游戏」，抽到了第 ${i+1} 个质数 <b>${dmg}</b>，对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
-
+    let base = ZS[i];
+    const real = ccfDamagePlayer(base);
+    log(`€€￡ 对你使用了「纸牌游戏」，抽到了第 ${i+1} 个质数 <b>${base}</b>，对你造成了 <span class="dmg">${real}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
     if (S.ll === 1){
-      S.hpN -= dmg;
       S.ll = 0;
-      log(`因为 €€￡ 拥有力量效果，对你造成了双倍伤害！你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+      const real2 = ccfDamagePlayer(base);
+      log(`因为 €€￡ 拥有力量效果，对你造成了双倍伤害！${real2 === 0 ? '（免疫）' : `你现在还剩余 ${Math.round(S.hpN)} 点血量。`}`, 'bad');
     }
     updateUI();
     await sleep(420);
     if (checkDead()) return;
-
-  } else if (op === 2){
-    let target = 0;
-    for (let i = HW.length - 1; i >= 0; i--){
-      if (S.hpN >= HW[i]){ target = HW[i]; break; }
+  } else if (skill === 'pal'){
+    if (S.immune > 0){
+      S.immune--;
+      log('€€￡ 对你使用了「回文串」，但你的免疫生效，效果无效！', 'good');
+      updateUI();
+      await sleep(360);
+    } else {
+      let target = 0;
+      for (let i = HW.length - 1; i >= 0; i--){
+        if (S.hpN >= HW[i]){ target = HW[i]; break; }
+      }
+      if (target === 0) target = Math.max(0, Math.round(S.hpN));
+      const dmg = Math.round(S.hpN) - target;
+      S.hpN = target;
+      log(`€€￡ 对你使用了「回文串」，你的血量被改写成 <b>${target}</b>，对你造成了 <span class="dmg">${dmg}</span> 点伤害。`, 'bad');
+      updateUI();
+      await sleep(420);
     }
-    if (target === 0) target = Math.max(0, Math.round(S.hpN));
-    const dmg = Math.round(S.hpN) - target;
-    S.hpN = target;
-    log(`€€￡ 对你使用了「回文串」，你的血量被改写成 <b>${target}</b>，对你造成了 <span class="dmg">${dmg}</span> 点伤害。`, 'bad');
-    updateUI();
-    await sleep(420);
-
-  } else if (op === 3){
+  } else if (skill === 'mig'){
     S.qx = 3;
     log('€€￡ 进入迁徙态！接下来 2 个回合你无法攻击到它。', 'bad');
     updateUI();
     await sleep(420);
-
-  } else {
+  } else if (skill === 'quiz1'){
     log('€€￡：D 座和 F 座是否相邻？', 'bossline');
     const ans = await askChoice(['相邻', '不相邻']);
     if (ans === 0){
       log('回答正确，你毫发无伤。', 'good');
       await sleep(340);
     } else {
-      S.hpN -= 1000000;
-      log('回答错误！你受到了 <span class="dmg">1000000</span> 点伤害。', 'bad');
+      const real = ccfDamagePlayer(1000000);
+      log(`回答错误！你受到了 <span class="dmg">${real}</span> 点伤害。`, 'bad');
       updateUI();
       await sleep(400);
       checkDead();
       return;
     }
+  } else if (skill === 'quiz2'){
+    log('€€￡：根据战场上实时反馈的虫洞信息，当前的时刻是否能够进行一次反攻？', 'bossline');
+    const correct = Math.random() < 0.5 ? 0 : 1;
+    const ans = await askChoice(['YES', 'NO']);
+    if (ans === correct){
+      log('回答正确，你毫发无伤。', 'good');
+      await sleep(340);
+    } else {
+      const real = ccfDamagePlayer(1000000);
+      log(`回答错误！你受到了 <span class="dmg">${real}</span> 点伤害。`, 'bad');
+      updateUI();
+      await sleep(400);
+      checkDead();
+      return;
+    }
+  } else if (skill === 'water'){
+    S.waterStop = 1;
+    log('€€￡ 使用了「停水」！所有树和数据结构暂停生产 1 回合。', 'bad');
+    updateUI();
+    await sleep(400);
+  } else if (skill === 'check'){
+    log('€€￡：check(114514)！爆你魔丸，让你花费精力参加 NGOI！', 'bossline');
+    const real = ccfDamagePlayer(78);
+    if (real === 0){
+      log('你的免疫生效，伤害无效！', 'good');
+    } else {
+      log(`对你造成了 <span class="dmg">${real}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    }
+    updateUI();
+    await sleep(420);
+    if (checkDead()) return;
   }
 
-  S.qx--;
+  if (S.qx > 0) S.qx--;
   updateUI();
   await sleep(200);
 
+  // 研发基地
   await sleep(240);
   const p = rnd(1, 4);
   if (p === 1){
@@ -886,38 +1257,47 @@ async function bossTurn(){
     log('【研发基地】冰冻药水！你下一回合所有攻击效果减半。', 'bad');
   } else {
     const dmg = rnd(25, 45);
-    S.hpN -= dmg;
-    log(`【研发基地】伤害药水！对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    const real = ccfDamagePlayer(dmg);
+    if (real === 0){
+      log('【研发基地】伤害药水！但你的免疫生效，伤害无效。', 'good');
+    } else {
+      log(`【研发基地】伤害药水！对你造成了 <span class="dmg">${real}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    }
   }
   updateUI();
   await sleep(380);
   checkDead();
 }
 
+/* ================= 回合收尾 ================= */
+async function endTurnReset() {
+  S.o2Boost = false;
+  if (!S.over) S.turn++;
+  updateUI();
+}
+
 /* ================= 新游戏 ================= */
 function newGame(){
   S = {
-    hpN: 150,
-    hpC: 500,
-    sj: 8,
-    dt: 50,
-    qx: 0,
-    bd: 0,
-    ll: 0,
-    phase: 1,
-    over: false,
-    turn: 1
+    hpN: 150, hpC: 500,
+    sj: 8, dt: 50,
+    qx: 0, bd: 0, ll: 0,
+    phase: 1, over: false, turn: 1,
+    treeLv: 0, dsLv: 0,
+    o2: 50, o2Boost: false,
+    waterStop: 0, immune: 0,
+    bootcampCountdown: 0
   };
   busy = false;
   logEl.innerHTML = '';
 
   log('€€￡ 和你巴巴博弈', 'title');
   log('€€￡ 血量上限 500，你血量上限 150。', 'sys');
-  log('€€￡ 有 8 个能量水晶，你必须摧毁全部能量水晶，否则每个能量水晶每回合会为 €€￡ 回复无限点血量。能量水晶很脆弱，你一下就可以摧毁，但水晶爆炸会对你造成 [5,20] 伤害。', 'sys');
-  log('€€￡ 还有十万条地铁线路，如果你不摧毁这些地铁线路，€€￡ 会乘坐无限速度的地铁一直闪避，你无法攻击。值得庆幸的是，地铁都是首尾相接的，所以你只需摧毁一个站点。地铁血量 50，你每次攻击的伤害在 [15,30] 之间。', 'sys');
-  log('摧毁水晶和地铁时，€€￡ 每回合会对你进行普攻，一次造成 [10,20] 点伤害。', 'sys');
-  log('摧毁水晶和地铁后，€€￡ 每回合会从技能中随机抽取：纸牌游戏 / 回文串 / 迁徙 / 旅游；同时研发基地会研发伤害、冰冻、治疗、力量四种药水之一。', 'sys');
-  log('你的技能：普攻（25~40）、暴戾语言（60% 造成 50 伤害，40% 自身受 100 伤害）、吃饭。', 'sys');
+  log('€€￡ 有 8 个能量水晶，必须全部摧毁；地铁血量 50。否则 €€￡ 将无限回复并闪避。', 'sys');
+  log('科技树：二叉树每回合产血，数据结构光合作用产 O₂。', 'sys');
+  log('氧气罐：初始 50 O₂。消耗 10 O₂ 使用「O₂ 优化」：本回合对 CCF 伤害 ×2，自身受到伤害 ÷2。', 'sys');
+  log('新技能：集训（25 HP，2 回合后 +50 HP / O₂+log₂ / CCF-log₂）；考级（40 HP，50% 获得 2 回合免疫）。', 'sys');
+  log('CCF 新增技能：停水（暂停生产 1 回合）、check(114514)（78 伤害，小概率）。', 'sys');
   log('—— 祝你好运 ——', 'title');
 
   updateUI();
