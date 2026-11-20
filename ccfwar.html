@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>€€￡ 和你巴巴博弈 · 科技对决</title>
+<style>
+  /* ========== 全局 ========== */
+  *,*::before,*::after{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background-color:#05060a;
+    color:#ffffff; /* 全局文字改为纯白 */
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* 赛博网格背景 */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(0,240,255,.08), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 50% 110%, rgba(255,0,102,.08), transparent 70%),
+      linear-gradient(rgba(0,240,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,.025) 1px, transparent 1px);
+    background-size:auto,auto,48px 48px,48px 48px;
+  }
+
+  /* 扫描线 */
+  body::after{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.18) 2px, rgba(0,0,0,.18) 4px);
+    opacity:.35;
+  }
+
+  .app{
+    position:relative; z-index:1;
+    width:min(920px,100%);
+    margin:0 auto;
+    padding:24px 16px 56px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  /* ========== 顶栏 ========== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding-bottom:18px;
+    border-bottom:1px solid rgba(0,240,255,.15);
+    position:relative;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute; bottom:-1px; left:0;
+    width:120px; height:2px;
+    background:linear-gradient(90deg,#00f0ff,#ff0066);
+    box-shadow:0 0 12px #00f0ff, 0 0 20px #ff0066;
+    border-radius:2px;
+  }
+
+  .brand{display:flex; align-items:center; gap:15px; min-width:0;}
+
+  /* 头像：霓虹环 */
+  .avatar{
+    width:68px; height:68px; flex:none;
+    border-radius:50%;
+    padding:3px;
+    background:conic-gradient(from 0deg, #00f0ff, #ff0066, #00f0ff);
+    box-shadow:
+      0 0 16px rgba(0,240,255,.5),
+      0 0 32px rgba(255,0,102,.25),
+      inset 0 0 12px rgba(0,240,255,.3);
+    position:relative;
+  }
+  .avatar img{
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:50%;
+    background:#0a0c14;
+    display:block;
+    filter:contrast(1.05) brightness(1.05);
+  }
+
+  .brand-text h1{
+    margin:0;
+    font-size:22px; font-weight:800; letter-spacing:.04em;
+    background:linear-gradient(90deg,#00f0ff,#ff0066);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 24px rgba(0,240,255,.2);
+  }
+  .brand-text p{margin:4px 0 0; font-size:13.5px; color:#cbd5e1; font-weight:500; letter-spacing:.05em;}
+
+  .turn-box{
+    flex:none; display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:8px 22px;
+    border-radius:10px;
+    border:1px solid rgba(0,240,255,.25);
+    background:rgba(0,240,255,.04);
+    box-shadow:inset 0 0 18px rgba(0,240,255,.08), 0 0 10px rgba(0,240,255,.08);
+  }
+  .turn-label{font-size:11px; letter-spacing:.2em; color:#94a3b8; font-weight:700;}
+  .turn-num{font:800 24px/1 ui-monospace,SFMono-Regular,monospace; color:#00f0ff; text-shadow:0 0 12px #00f0ff;}
+
+  /* ========== 战斗面板 ========== */
+  .board{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:620px){ .board{grid-template-columns:1fr;} }
+
+  .fighter{
+    position:relative;
+    padding:18px 20px 16px;
+    border-radius:12px;
+    background:rgba(10,14,22,.85);
+    backdrop-filter:blur(4px);
+    border:1px solid rgba(0,240,255,.12);
+    box-shadow:0 0 24px rgba(0,0,0,.5), inset 0 0 32px rgba(0,240,255,.02);
+    transition:border-color .3s, box-shadow .3s;
+    overflow:hidden;
+  }
+  .fighter::before{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,240,255,.015) 2px, rgba(0,240,255,.015) 4px);
+    pointer-events:none;
+  }
+
+  .fighter.is-player{
+    border-color:rgba(0,240,255,.35);
+    box-shadow:0 0 28px rgba(0,240,255,.08), inset 0 0 40px rgba(0,240,255,.03);
+  }
+  .fighter.is-boss{
+    border-color:rgba(255,0,102,.35);
+    box-shadow:0 0 28px rgba(255,0,102,.08), inset 0 0 40px rgba(255,0,102,.03);
+  }
+
+  .f-row{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:12px;}
+  .f-name{font-size:15px; font-weight:800; letter-spacing:.08em;}
+  .is-player .f-name{color:#00f0ff; text-shadow:0 0 10px rgba(0,240,255,.4);}
+  .is-boss .f-name{color:#ff0066; text-shadow:0 0 10px rgba(255,0,102,.4);}
+
+  /* 数字和血量说明调亮 */
+  .f-hp{font-family:ui-monospace,SFMono-Regular,monospace; font-size:14px; color:#cbd5e1; white-space:nowrap; font-weight:600;}
+  .f-hp b{font-size:24px; font-weight:800; letter-spacing:-.02em;}
+  .is-player .f-hp b{color:#00f0ff; text-shadow:0 0 14px rgba(0,240,255,.4);}
+  .is-boss .f-hp b{color:#ff0066; text-shadow:0 0 14px rgba(255,0,102,.4);}
+
+  .hpbar{
+    position:relative;
+    height:10px;
+    border-radius:99px;
+    background:rgba(255,255,255,.08);
+    overflow:hidden;
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.8);
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .hpbar-fill{
+    height:100%; width:100%;
+    border-radius:99px;
+    transition:width .5s cubic-bezier(.22,1,.36,1);
+  }
+  .is-player .hpbar-fill{background:linear-gradient(90deg,#0066ff,#00f0ff); box-shadow:0 0 14px rgba(0,240,255,.5);}
+  .is-boss .hpbar-fill{background:linear-gradient(90deg,#990033,#ff0066); box-shadow:0 0 14px rgba(255,0,102,.5);}
+
+  .hpbar-fill.low{animation:hpPulse .9s ease-in-out infinite;}
+  @keyframes hpPulse{50%{opacity:.55;}}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .chips:empty{margin-top:0;}
+  .chip{
+    font-size:11px; font-weight:700; letter-spacing:.06em;
+    padding:3px 10px;
+    border-radius:4px;
+    border:1px solid;
+    text-transform:uppercase;
+  }
+  .chip-ice{color:#00f0ff; border-color:rgba(0,240,255,.4); background:rgba(0,240,255,.08); box-shadow:0 0 10px rgba(0,240,255,.12);}
+  .chip-move{color:#a78bfa; border-color:rgba(167,139,250,.4); background:rgba(167,139,250,.08); box-shadow:0 0 10px rgba(167,139,250,.12);}
+  .chip-power{color:#fbbf24; border-color:rgba(251,191,36,.4); background:rgba(251,191,36,.08); box-shadow:0 0 10px rgba(251,191,36,.12);}
+  .chip-lock{color:#ff0066; border-color:rgba(255,0,102,.4); background:rgba(255,0,102,.08); box-shadow:0 0 10px rgba(255,0,102,.12);}
+
+  /* ========== 目标 ========== */
+  .objectives{
+    padding:18px 20px;
+    border-radius:12px;
+    background:rgba(10,14,22,.8);
+    border:1px solid rgba(0,240,255,.1);
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+    display:flex; flex-direction:column; gap:18px;
+  }
+  .obj{display:flex; flex-direction:column; gap:10px;}
+  /* 目标标签调亮 */
+  .obj-label{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    font-size:13.5px; font-weight:700; color:#ffffff; letter-spacing:.06em;
+  }
+  .obj-label em{font-style:normal; font-family:ui-monospace,monospace; font-size:13px; color:#00f0ff; text-shadow:0 0 8px rgba(0,240,255,.3);}
+
+  .crystals{display:flex; gap:14px; padding:2px 0;}
+  .crystal{
+    width:18px; height:18px;
+    border-radius:2px;
+    transform:rotate(45deg);
+    background:linear-gradient(135deg,#00f0ff,#0066ff);
+    box-shadow:0 0 12px rgba(0,240,255,.6), inset 0 1px 2px rgba(255,255,255,.5);
+    transition:all .4s ease;
+    border:1px solid rgba(0,240,255,.5);
+  }
+  .crystal.gone{
+    background:rgba(255,255,255,.05);
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.6);
+    border-color:rgba(255,255,255,.1);
+    transform:rotate(45deg) scale(.85);
+    opacity:.5;
+  }
+  .hpbar-fill.rail{
+    background:repeating-linear-gradient(90deg,#00f0ff 0 8px,#0066ff 8px 16px);
+    box-shadow:0 0 14px rgba(0,240,255,.4);
+  }
+
+  /* ========== 日志 ========== */
+  .log-panel{
+    border-radius:12px;
+    background:rgba(5,8,14,.9);
+    border:1px solid rgba(0,240,255,.1);
+    box-shadow:0 0 24px rgba(0,0,0,.5), inset 0 0 60px rgba(0,240,255,.02);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .log-head{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 20px;
+    font-size:12px; font-weight:800; letter-spacing:.18em;
+    color:#ffffff;
+    border-bottom:1px solid rgba(0,240,255,.1);
+    background:rgba(0,240,255,.02);
+    text-transform:uppercase;
+  }
+  .log-head::before{
+    content:""; width:6px; height:6px; border-radius:50%;
+    background:#00f0ff;
+    box-shadow:0 0 10px #00f0ff, 0 0 20px #00f0ff;
+  }
+  .log{
+    height:320px;
+    overflow-y:auto;
+    padding:16px 20px;
+    display:flex; flex-direction:column; gap:6px;
+    font-size:15px; line-height:1.75;
+    scrollbar-width:thin; scrollbar-color:rgba(0,240,255,.3) transparent;
+  }
+  .log::-webkit-scrollbar{width:6px;}
+  .log::-webkit-scrollbar-thumb{background:rgba(0,240,255,.3); border-radius:99px;}
+
+  /* 核心修改：日志正文全部提亮 */
+  .log-line{
+    padding-left:14px; border-left:2px solid transparent; color:#f1f5f9;
+    animation:fadeIn .2s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
+
+  .log-line b{color:#ffffff; font-weight:800;}
+  .log-line.good{border-left-color:#00f0ff; color:#ccfbf1; background:rgba(0,240,255,.04);}
+  .log-line.bad{border-left-color:#ff0066; color:#ffe4e6; background:rgba(255,0,102,.04);}
+  .log-line.warn{border-left-color:#fbbf24; color:#fef3c7; background:rgba(251,191,36,.04);}
+  .log-line.sys{color:#cbd5e1; font-size:14.5px;}
+  .log-line.title{border-left-color:#a78bfa; color:#e9d5ff; font-weight:800; font-size:16px; margin-top:6px;}
+  .log-line.bossline{color:#fda4af; font-weight:700; text-shadow:0 0 8px rgba(255,0,102,.3);}
+  .dmg{color:#ff4d79; font-weight:800; font-family:ui-monospace,monospace; font-size:16px; text-shadow:0 0 8px rgba(255,0,102,.4);}
+
+  /* ========== 立体按钮（赛博朋克） ========== */
+  .actions{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:14px;
+  }
+  .btn{
+    position:relative;
+    display:flex; flex-direction:column; align-items:flex-start;
+    gap:4px; padding:16px 20px;
+    border-radius:8px;
+    border:1px solid;
+    font-family:inherit; font-size:16px; font-weight:800;
+    text-align:left; cursor:pointer;
+    transition:all .12s ease;
+    -webkit-tap-highlight-color:transparent;
+    overflow:hidden;
+    letter-spacing:.03em;
+  }
+  /* 按钮说明文字提亮 */
+  .btn small{
+    font-size:12.5px; font-weight:500;
+    color:rgba(255,255,255,.85); line-height:1.45;
+    letter-spacing:.02em;
+  }
+
+  /* 按钮共享的扫描线 */
+  .btn::after{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.12) 2px, rgba(0,0,0,.12) 4px);
+    pointer-events:none;
+    opacity:.4;
+  }
+
+  /* 青蓝按钮（玩家） */
+  .btn.btn-cyan{
+    background:linear-gradient(180deg,rgba(0,240,255,.18),rgba(0,240,255,.04));
+    border-color:rgba(0,240,255,.5);
+    color:#00f0ff;
+    text-shadow:0 0 10px rgba(0,240,255,.3);
+    box-shadow:
+      0 6px 0 rgba(0,240,255,.15),
+      0 10px 24px -4px rgba(0,240,255,.18),
+      inset 0 1px 1px rgba(255,255,255,.15);
+  }
+  .btn.btn-cyan:hover:not(:disabled){
+    background:linear-gradient(180deg,rgba(0,240,255,.3),rgba(0,240,255,.08));
+    box-shadow:
+      0 6px 0 rgba(0,240,255,.25),
+      0 12px 32px -4px rgba(0,240,255,.3),
+      inset 0 1px 1px rgba(255,255,255,.25);
+  }
+  .btn.btn-cyan:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:
+      0 0 0 rgba(0,240,255,.15),
+      0 2px 8px rgba(0,240,255,.15),
+      inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  /* 赤红按钮（Boss） */
+  .btn.btn-crimson{
+    background:linear-gradient(180deg,rgba(255,0,102,.18),rgba(255,0,102,.04));
+    border-color:rgba(255,0,102,.5);
+    color:#ff0066;
+    text-shadow:0 0 10px rgba(255,0,102,.3);
+    box-shadow:
+      0 6px 0 rgba(255,0,102,.15),
+      0 10px 24px -4px rgba(255,0,102,.18),
+      inset 0 1px 1px rgba(255,255,255,.15);
+  }
+  .btn.btn-crimson:hover:not(:disabled){
+    background:linear-gradient(180deg,rgba(255,0,102,.3),rgba(255,0,102,.08));
+    box-shadow:
+      0 6px 0 rgba(255,0,102,.25),
+      0 12px 32px -4px rgba(255,0,102,.3),
+      inset 0 1px 1px rgba(255,255,255,.25);
+  }
+  .btn.btn-crimson:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:
+      0 0 0 rgba(255,0,102,.15),
+      0 2px 8px rgba(255,0,102,.15),
+      inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  /* 幽绿按钮（吃饭/恢复） */
+  .btn.btn-neon{
+    background:linear-gradient(180deg,rgba(0,255,170,.15),rgba(0,255,170,.03));
+    border-color:rgba(0,255,170,.45);
+    color:#00ffaa;
+    text-shadow:0 0 10px rgba(0,255,170,.3);
+    box-shadow:
+      0 6px 0 rgba(0,255,170,.12),
+      0 10px 24px -4px rgba(0,255,170,.15),
+      inset 0 1px 1px rgba(255,255,255,.12);
+  }
+  .btn.btn-neon:hover:not(:disabled){
+    background:linear-gradient(180deg,rgba(0,255,170,.28),rgba(0,255,170,.07));
+    box-shadow:
+      0 6px 0 rgba(0,255,170,.22),
+      0 12px 32px -4px rgba(0,255,170,.25),
+      inset 0 1px 1px rgba(255,255,255,.2);
+  }
+  .btn.btn-neon:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:
+      0 0 0 rgba(0,255,170,.12),
+      0 2px 8px rgba(0,255,170,.12),
+      inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  /* 重新开始 */
+  .btn.restart{
+    grid-column:1/-1; align-items:center; text-align:center;
+    background:linear-gradient(180deg,rgba(167,139,250,.18),rgba(167,139,250,.04));
+    border-color:rgba(167,139,250,.5);
+    color:#a78bfa;
+    text-shadow:0 0 10px rgba(167,139,250,.3);
+    box-shadow:
+      0 6px 0 rgba(167,139,250,.15),
+      0 10px 24px -4px rgba(167,139,250,.18),
+      inset 0 1px 1px rgba(255,255,255,.15);
+  }
+  .btn.restart:hover:not(:disabled){
+    background:linear-gradient(180deg,rgba(167,139,250,.3),rgba(167,139,250,.08));
+    box-shadow:
+      0 6px 0 rgba(167,139,250,.25),
+      0 12px 32px -4px rgba(167,139,250,.3),
+      inset 0 1px 1px rgba(255,255,255,.25);
+  }
+  .btn.restart:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:
+      0 0 0 rgba(167,139,250,.15),
+      0 2px 8px rgba(167,139,250,.15),
+      inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  .btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    transform:translateY(4px) !important;
+    box-shadow:0 2px 0 rgba(0,0,0,.3) !important;
+    filter:grayscale(.7);
+  }
+
+  /* 选择题按钮（中性） */
+  .btn.choice{
+    align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));
+    border-color:rgba(255,255,255,.35);
+    color:#ffffff;
+    box-shadow:
+      0 6px 0 rgba(255,255,255,.08),
+      0 10px 24px -4px rgba(0,0,0,.5),
+      inset 0 1px 1px rgba(255,255,255,.15);
+  }
+  .btn.choice:hover:not(:disabled){
+    border-color:#00f0ff;
+    color:#00f0ff;
+    background:linear-gradient(180deg,rgba(0,240,255,.15),rgba(0,240,255,.03));
+  }
+  .btn.choice:active:not(:disabled){
+    transform:translateY(6px);
+    box-shadow:
+      0 0 0 rgba(255,255,255,.06),
+      0 2px 8px rgba(0,0,0,.3),
+      inset 0 1px 2px rgba(0,0,0,.3);
+  }
+
+  @media (max-width:480px){
+    .app{padding:16px 12px 40px;}
+    .brand-text h1{font-size:20px;}
+    .avatar{width:56px; height:56px;}
+    .log{height:280px;}
+    .actions{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="avatar">
+        <img src="https://www.oi-coding.cn/file/264/CCF_quanwei.png" alt="CCF">
+      </div>
+      <div class="brand-text">
+        <h1>和你巴巴博弈</h1>
+        <p>摧毁水晶与地铁，然后击败 €€￡</p>
+      </div>
+    </div>
+    <div class="turn-box">
+      <span class="turn-label">TURN</span>
+      <span class="turn-num" id="turnNum">1</span>
+    </div>
+  </header>
+
+  <section class="board">
+    <article class="fighter is-player">
+      <div class="f-row">
+        <span class="f-name">你</span>
+        <span class="f-hp"><b id="playerHpNum">150</b><i> / 150</i></span>
+      </div>
+      <div class="hpbar"><div class="hpbar-fill" id="playerFill"></div></div>
+      <div class="chips" id="playerStatus"></div>
+    </article>
+
+    <article class="fighter is-boss">
+      <div class="f-row">
+        <span class="f-name">€€￡</span>
+        <span class="f-hp"><b id="bossHpNum">500</b><i> / 500</i></span>
+      </div>
+      <div class="hpbar"><div class="hpbar-fill" id="bossFill"></div></div>
+      <div class="chips" id="bossStatus"></div>
+    </article>
+  </section>
+
+  <section class="objectives">
+    <div class="obj">
+      <div class="obj-label"><span>能量水晶</span><em id="crystalCount">8 / 8</em></div>
+      <div class="crystals" id="crystals"></div>
+    </div>
+    <div class="obj">
+      <div class="obj-label"><span>地铁线路</span><em id="subwayText">50 / 50</em></div>
+      <div class="hpbar"><div class="hpbar-fill rail" id="subwayFill"></div></div>
+    </div>
+  </section>
+
+  <section class="log-panel">
+    <div class="log-head"><span>战况记录 // LOG</span></div>
+    <div class="log" id="log"></div>
+  </section>
+
+  <section class="actions" id="actions"></section>
+
+</div>
+
+<script>
+/* ================= 工具 ================= */
+const rnd   = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const ZS = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];
+const HW = [1,2,3,4,5,6,7,8,9,11,22,33,44,55,66,77,88,99,111,121,131,141];
+
+/* ================= DOM ================= */
+const logEl        = document.getElementById('log');
+const actionsEl    = document.getElementById('actions');
+const playerFill   = document.getElementById('playerFill');
+const playerHpNum  = document.getElementById('playerHpNum');
+const bossFill     = document.getElementById('bossFill');
+const bossHpNum    = document.getElementById('bossHpNum');
+const subwayFill   = document.getElementById('subwayFill');
+const subwayText   = document.getElementById('subwayText');
+const crystalCount = document.getElementById('crystalCount');
+const playerStatus = document.getElementById('playerStatus');
+const bossStatus   = document.getElementById('bossStatus');
+const crystalsEl   = document.getElementById('crystals');
+const turnNum      = document.getElementById('turnNum');
+
+/* ================= 状态 ================= */
+let S = null;
+let busy = false;
+
+/* ================= 日志 ================= */
+function log(msg, cls=''){
+  const d = document.createElement('div');
+  d.className = 'log-line' + (cls ? ' ' + cls : '');
+  d.innerHTML = msg;
+  logEl.appendChild(d);
+  while (logEl.childElementCount > 400) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ================= 刷新界面 ================= */
+function updateUI(){
+  const hpN = Math.max(0, Math.round(S.hpN));
+  playerHpNum.textContent = hpN;
+  const pct = Math.max(0, Math.min(100, hpN / 150 * 100));
+  playerFill.style.width = pct + '%';
+  playerFill.classList.toggle('low', pct <= 30);
+
+  const hpC = Math.max(0, Math.round(S.hpC));
+  bossHpNum.textContent = hpC;
+  bossFill.style.width = Math.max(0, Math.min(100, hpC / 500 * 100)) + '%';
+
+  const dtv = Math.max(0, Math.round(S.dt));
+  subwayText.textContent = `${dtv} / 50`;
+  subwayFill.style.width = Math.max(0, Math.min(100, dtv / 50 * 100)) + '%';
+
+  crystalCount.textContent = `${S.sj} / 8`;
+
+  crystalsEl.innerHTML = '';
+  for (let i = 0; i < 8; i++){
+    const c = document.createElement('div');
+    c.className = 'crystal' + (i < S.sj ? '' : ' gone');
+    crystalsEl.appendChild(c);
+  }
+
+  playerStatus.innerHTML = S.bd > 0 ? '<span class="chip chip-ice">冰冻</span>' : '';
+
+  let bs = '';
+  if (S.qx > 0)      bs += '<span class="chip chip-move">迁徙中</span>';
+  if (S.ll > 0)      bs += '<span class="chip chip-power">力量蓄势</span>';
+  if (S.phase === 1) bs += '<span class="chip chip-lock">无限回复 · 闪避</span>';
+  bossStatus.innerHTML = bs;
+
+  turnNum.textContent = S.turn;
+}
+
+/* ================= 按钮 ================= */
+function setButtonsDisabled(v){
+  actionsEl.querySelectorAll('button').forEach(b => b.disabled = v);
+}
+
+function addAction(title, desc, styleClass, fn){
+  const b = document.createElement('button');
+  b.className = `btn ${styleClass}`;
+  b.innerHTML = `${title}<small>${desc}</small>`;
+  b.onclick = makeHandler(fn);
+  actionsEl.appendChild(b);
+}
+
+function makeHandler(fn){
+  return async () => {
+    if (busy || !S || S.over) return;
+    busy = true;
+    setButtonsDisabled(true);
+    try { await fn(); } catch(e){ console.error(e); }
+    busy = false;
+    if (!S.over) S.turn++;
+    renderActions();
+    updateUI();
+  };
+}
+
+function renderActions(){
+  actionsEl.innerHTML = '';
+
+  if (S.over){
+    const b = document.createElement('button');
+    b.className = 'btn restart';
+    b.innerHTML = '重新开始<small>再被 €€￡ 虐一次</small>';
+    b.onclick = () => newGame();
+    actionsEl.appendChild(b);
+    return;
+  }
+
+  if (S.phase === 1){
+    addAction('攻击能量水晶', '摧毁 1 个水晶，自身受到 5~20 伤害', 'btn-cyan', () => firstPhaseAct(1));
+    addAction('攻击地铁',     '对地铁造成 15~30 伤害',              'btn-cyan', () => firstPhaseAct(2));
+    addAction('吃饭',         '50% 回 35 ／ 10% 扣 10 ／ 40% 回 60', 'btn-neon', () => firstPhaseAct(3));
+  } else {
+    addAction('普通攻击',     '对 €€￡ 造成 25~40 伤害',            'btn-cyan', () => secondPhaseAct(1));
+    addAction('暴戾语言',     '60% 造成 50 伤害 ／ 40% 自身受 100',  'btn-crimson', () => secondPhaseAct(2));
+    addAction('吃饭',         '50% 回 35 ／ 10% 扣 10 ／ 40% 回 60', 'btn-neon', () => secondPhaseAct(3));
+  }
+}
+
+/* 旅游选择题 */
+function askChoice(labels){
+  return new Promise(resolve => {
+    actionsEl.innerHTML = '';
+    labels.forEach((label, i) => {
+      const b = document.createElement('button');
+      b.className = 'btn choice';
+      b.innerHTML = label;
+      b.onclick = () => {
+        actionsEl.querySelectorAll('button').forEach(x => x.disabled = true);
+        resolve(i);
+      };
+      actionsEl.appendChild(b);
+    });
+  });
+}
+
+/* ================= 判定 ================= */
+function checkDead(){
+  if (S.hpN <= 0 && !S.over){
+    S.over = true;
+    S.hpN = 0;
+    updateUI();
+    log('你输了游戏，被 €€￡ 夺走了所有的钱。', 'bad');
+    log('游戏结束', 'title');
+    return true;
+  }
+  return false;
+}
+
+function winGame(){
+  S.over = true;
+  S.hpC = Math.max(0, S.hpC);
+  updateUI();
+  log('你击败了 €€￡！你赢了游戏，守护了你的钱。', 'good');
+  log('游戏结束', 'title');
+}
+
+/* ================= 吃饭 ================= */
+async function doEat(){
+  const r = rnd(0, 9);
+  if (r <= 4){
+    S.hpN = Math.min(150, S.hpN + 35);
+    log(`你吃了一份普通的食物，恢复了 35 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
+  } else if (r === 5){
+    S.hpN -= 10;
+    log(`你吃了一份发霉的食物，扣除了 10 点血量。你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    updateUI();
+    if (checkDead()) return true;
+  } else {
+    S.hpN = Math.min(150, S.hpN + 60);
+    log(`你吃了一份绝世美味，恢复了 60 点血量。你现在有 ${Math.round(S.hpN)} 点血量。`, 'good');
+  }
+  updateUI();
+  await sleep(320);
+  return false;
+}
+
+/* ================= 第一阶段 ================= */
+async function firstPhaseAct(op){
+  if (op === 1){
+    if (S.sj === 0){
+      log('水晶已经没了！你浪费了一个回合。', 'warn');
+    } else {
+      S.sj--;
+      const dmg = rnd(5, 20);
+      S.hpN -= dmg;
+      log(`1 个能量水晶被你摧毁，剩余 ${S.sj} 个水晶。爆炸对你造成了 <span class="dmg">${dmg}</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'good');
+    }
+    updateUI();
+    if (checkDead()) return;
+    await sleep(320);
+
+  } else if (op === 2){
+    if (S.dt <= 0){
+      log('地铁已经没了！你浪费了一个回合。', 'warn');
+    } else {
+      const dmg = rnd(15, 30);
+      S.dt -= dmg;
+      log(`你对地铁造成了 <span class="dmg">${dmg}</span> 点伤害，地铁还剩余 ${Math.max(0, Math.round(S.dt))} 点血量。`, 'good');
+      if (S.dt <= 0){
+        S.dt = 0;
+        log('地铁已被摧毁！', 'good');
+      }
+    }
+    updateUI();
+    await sleep(320);
+
+  } else {
+    const dead = await doEat();
+    if (dead) return;
+  }
+
+  const dmg = rnd(10, 20);
+  S.hpN -= dmg;
+  log(`€€￡ 对你发动了普攻，对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+  updateUI();
+  await sleep(360);
+  if (checkDead()) return;
+
+  if (S.sj <= 0 && S.dt <= 0){
+    S.phase = 2;
+    S.hpN = Math.min(150, S.hpN);
+    log('你已经摧毁了全部能量水晶和地铁！', 'title');
+    log('€€￡ 失去了无限回复与无限闪避，最终决战开始！', 'title');
+    updateUI();
+    await sleep(420);
+  }
+}
+
+/* ================= 第二阶段：玩家 ================= */
+async function secondPhaseAct(op){
+  if (op === 1){
+    await playerNormalAttack();
+    if (S.over) return;
+  } else if (op === 2){
+    await playerTaunt();
+    if (S.over) return;
+  } else {
+    const dead = await doEat();
+    if (dead) return;
+  }
+
+  S.bd = 0;
+  updateUI();
+  await sleep(220);
+  await bossTurn();
+}
+
+async function playerNormalAttack(){
+  if (S.qx > 0){
+    log('€€￡ 处于迁徙态，你的攻击落空了！', 'warn');
+    updateUI();
+    await sleep(320);
+    return;
+  }
+
+  let dmg = rnd(25, 40);
+  const frozen = S.bd > 0;
+  if (frozen) dmg = Math.floor(dmg / 2);
+
+  S.hpC -= dmg;
+  log(frozen
+    ? `你处于冰冻状态。你对 €€￡ 发动了普攻，造成了 <span class="dmg">${dmg}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`
+    : `你对 €€￡ 发动了普攻，造成了 <span class="dmg">${dmg}</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`,
+    'good');
+  updateUI();
+  await sleep(360);
+
+  if (S.hpC <= 0) winGame();
+}
+
+async function playerTaunt(){
+  const success = Math.random() < 0.6;
+
+  if (success){
+    if (S.qx > 0){
+      log('€€￡ 处于迁徙态，你的暴戾语言落空了！', 'warn');
+    } else if (S.bd > 0){
+      S.hpC -= 25;
+      log(`你处于冰冻状态。你对 €€￡ 发动了暴戾语言，造成了 <span class="dmg">25</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`, 'good');
+    } else {
+      S.hpC -= 50;
+      log(`你对 €€￡ 发动了暴戾语言，暴击 €€￡！造成了 <span class="dmg">50</span> 点伤害，€€￡ 还剩余 ${Math.max(0, Math.round(S.hpC))} 点血量。`, 'good');
+    }
+    updateUI();
+    await sleep(360);
+    if (S.hpC <= 0) winGame();
+  } else {
+    S.hpN -= 100;
+    log(`你对 €€￡ 发动了暴戾语言，被 €€￡ 禁赛了！你受到了 <span class="dmg">100</span> 点伤害，你还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    updateUI();
+    await sleep(360);
+    checkDead();
+  }
+}
+
+/* ================= 第二阶段：BOSS ================= */
+async function bossTurn(){
+  log('现在 €€￡ 开始行动！', 'sys');
+  await sleep(260);
+
+  const op = rnd(1, 4);
+
+  if (op === 1){
+    const i = rnd(0, ZS.length - 1);
+    const dmg = ZS[i];
+    S.hpN -= dmg;
+    log(`€€￡ 对你使用了「纸牌游戏」，抽到了第 ${i+1} 个质数 <b>${dmg}</b>，对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+
+    if (S.ll === 1){
+      S.hpN -= dmg;
+      S.ll = 0;
+      log(`因为 €€￡ 拥有力量效果，对你造成了双倍伤害！你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+    }
+    updateUI();
+    await sleep(420);
+    if (checkDead()) return;
+
+  } else if (op === 2){
+    let target = 0;
+    for (let i = HW.length - 1; i >= 0; i--){
+      if (S.hpN >= HW[i]){ target = HW[i]; break; }
+    }
+    if (target === 0) target = Math.max(0, Math.round(S.hpN));
+    const dmg = Math.round(S.hpN) - target;
+    S.hpN = target;
+    log(`€€￡ 对你使用了「回文串」，你的血量被改写成 <b>${target}</b>，对你造成了 <span class="dmg">${dmg}</span> 点伤害。`, 'bad');
+    updateUI();
+    await sleep(420);
+
+  } else if (op === 3){
+    S.qx = 3;
+    log('€€￡ 进入迁徙态！接下来 2 个回合你无法攻击到它。', 'bad');
+    updateUI();
+    await sleep(420);
+
+  } else {
+    log('€€￡：D 座和 F 座是否相邻？', 'bossline');
+    const ans = await askChoice(['相邻', '不相邻']);
+    if (ans === 0){
+      log('回答正确，你毫发无伤。', 'good');
+      await sleep(340);
+    } else {
+      S.hpN -= 1000000;
+      log('回答错误！你受到了 <span class="dmg">1000000</span> 点伤害。', 'bad');
+      updateUI();
+      await sleep(400);
+      checkDead();
+      return;
+    }
+  }
+
+  S.qx--;
+  updateUI();
+  await sleep(200);
+
+  await sleep(240);
+  const p = rnd(1, 4);
+  if (p === 1){
+    S.hpC = Math.min(500, S.hpC + 15);
+    log(`【研发基地】治疗药水！€€￡ 回复了 15 点血量，现在还有 ${Math.round(S.hpC)} 点血量。`, 'bad');
+  } else if (p === 2){
+    S.ll = 1;
+    log('【研发基地】力量药水！€€￡ 下一次「纸牌游戏」伤害翻倍。', 'bad');
+  } else if (p === 3){
+    S.bd = 2;
+    log('【研发基地】冰冻药水！你下一回合所有攻击效果减半。', 'bad');
+  } else {
+    const dmg = rnd(25, 45);
+    S.hpN -= dmg;
+    log(`【研发基地】伤害药水！对你造成了 <span class="dmg">${dmg}</span> 点伤害，你现在还剩余 ${Math.round(S.hpN)} 点血量。`, 'bad');
+  }
+  updateUI();
+  await sleep(380);
+  checkDead();
+}
+
+/* ================= 新游戏 ================= */
+function newGame(){
+  S = {
+    hpN: 150,
+    hpC: 500,
+    sj: 8,
+    dt: 50,
+    qx: 0,
+    bd: 0,
+    ll: 0,
+    phase: 1,
+    over: false,
+    turn: 1
+  };
+  busy = false;
+  logEl.innerHTML = '';
+
+  log('€€￡ 和你巴巴博弈', 'title');
+  log('€€￡ 血量上限 500，你血量上限 150。', 'sys');
+  log('€€￡ 有 8 个能量水晶，你必须摧毁全部能量水晶，否则每个能量水晶每回合会为 €€￡ 回复无限点血量。能量水晶很脆弱，你一下就可以摧毁，但水晶爆炸会对你造成 [5,20] 伤害。', 'sys');
+  log('€€￡ 还有十万条地铁线路，如果你不摧毁这些地铁线路，€€￡ 会乘坐无限速度的地铁一直闪避，你无法攻击。值得庆幸的是，地铁都是首尾相接的，所以你只需摧毁一个站点。地铁血量 50，你每次攻击的伤害在 [15,30] 之间。', 'sys');
+  log('摧毁水晶和地铁时，€€￡ 每回合会对你进行普攻，一次造成 [10,20] 点伤害。', 'sys');
+  log('摧毁水晶和地铁后，€€￡ 每回合会从技能中随机抽取：纸牌游戏 / 回文串 / 迁徙 / 旅游；同时研发基地会研发伤害、冰冻、治疗、力量四种药水之一。', 'sys');
+  log('你的技能：普攻（25~40）、暴戾语言（60% 造成 50 伤害，40% 自身受 100 伤害）、吃饭。', 'sys');
+  log('—— 祝你好运 ——', 'title');
+
+  updateUI();
+  renderActions();
+}
+
+newGame();
+</script>
+</body>
+</html>
