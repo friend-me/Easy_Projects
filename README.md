@@ -4,11 +4,12 @@
 
 纯瞎搞，脑子抽疯的时候会更新一下。
 
-## 有用的
+## 最近的东西
 
 * [MTOJ介绍](https://friend-me.github.io/Easy_Projects/MTOIintro.html)
+* [大战CCF](https://friend-me.github.io/Easy_Projects/ccfwar.html)
 
-## 项目
+## 早期的项目
 
 * [闪电反应测试](https://friend-me.github.io/Easy_Projects/react.html)
 * [谷歌方龙](https://friend-me.github.io/Easy_Projects/dinosaur.html)
