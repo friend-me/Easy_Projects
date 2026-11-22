@@ -1,1139 +1,1380 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>犇气对战 - 双人本地对战</title>
-    <script src="https://aisearch-task.bj.bcebos.com/static/p5-1.9.4.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: #0a0a1a;
-        }
-        
-        #gameCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            display: block;
-        }
-        
-        /* PC端常驻技能栏 */
-        .skill-bar-pc {
-            position: fixed;
-            bottom: 10px;
-            z-index: 100;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .skill-bar-pc.p1 { left: 20px; }
-        .skill-bar-pc.p2 { right: 20px; }
-        
-        .skill-key {
-            width: 65px;
-            height: 65px;
-            border-radius: 12px;
-            border: 3px solid rgba(255,255,255,0.4);
-            background: rgba(0,0,0,0.6);
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.15s;
-            line-height: 1.3;
-            backdrop-filter: blur(5px);
-        }
-        
-        .skill-key:hover { transform: scale(1.08); background: rgba(255,255,255,0.2); }
-        .skill-key:active, .skill-key.active { transform: scale(0.95); background: rgba(255,255,255,0.35); }
-        
-        .skill-key .key-name { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
-        .skill-key.p1-skill { border-color: #C77DFF; }
-        .skill-key.p1-skill .key-name { color: #C77DFF; }
-        .skill-key.p2-skill { border-color: #0000FF; }
-        .skill-key.p2-skill .key-name { color: #4444FF; }
-        .skill-key.attack { border-color: #ff6b6b; }
-        .skill-key.attack .key-name { color: #ff6b6b; }
-        
-        /* 移动端虚拟按键 */
-        .mobile-controls {
-            position: fixed;
-            bottom: 15px;
-            z-index: 100;
-            display: none;
-        }
-        .mobile-controls.p1 { left: 15px; }
-        .mobile-controls.p2 { right: 15px; }
-        
-        .dpad-mobile {
-            display: grid;
-            grid-template-columns: repeat(3, 55px);
-            grid-template-rows: repeat(3, 55px);
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .dpad-btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            border: 3px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.15);
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .skills-mobile { display: flex; gap: 8px; flex-wrap: wrap; }
-        
-        .skill-btn-mobile {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            border: 3px solid;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .skill-btn-mobile .key-name { font-size: 16px; font-weight: 900; }
-        
-        @media (max-width: 900px) {
-            .skill-bar-pc { display: none !important; }
-            .mobile-controls { display: block !important; }
-            .move-hint { display: none !important; }
-        }
-        
-        .screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0a0a1a 0%, #0f0f2a 50%, #1a0a2e 100%);
-            z-index: 200;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .hidden { display: none !important; }
-        
-        .game-title {
-            font-size: 42px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #C77DFF, #4444FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 15px;
-        }
-        
-        .start-btn {
-            padding: 12px 40px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(135deg, #C77DFF, #0000FF);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 10px;
-        }
-        .start-btn:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(199, 125, 255, 0.4); }
-        
-        .char-info {
-            display: flex; gap: 30px; margin: 20px 0;
-            flex-wrap: wrap; justify-content: center;
-        }
-        
-        .char-card {
-            background: rgba(255,255,255,0.08);
-            padding: 15px; border-radius: 15px;
-            text-align: center; min-width: 180px;
-            border: 2px solid rgba(255,255,255,0.15);
-        }
-        
-        .char-name { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
-        .char-stats { font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.7; text-align: left; }
-        
-        .controls-hint {
-            color: rgba(255,255,255,0.7);
-            font-size: 13px; text-align: center;
-            margin-top: 15px; line-height: 1.6;
-        }
-        
-        .winner-text {
-            font-size: 48px; font-weight: 900; margin-bottom: 25px;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .notification {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 22px; font-weight: bold;
-            color: #ffcc00;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            z-index: 150; pointer-events: none;
-            animation: fadeUp 1.5s forwards;
-        }
-        @keyframes fadeUp {
-            0% { opacity: 0; transform: translate(-50%, -30%); }
-            20% { opacity: 1; transform: translate(-50%, -50%); }
-            80% { opacity: 1; transform: translate(-50%, -70%); }
-            100% { opacity: 0; transform: translate(-50%, -90%); }
-        }
-        
-        .move-hint {
-            position: fixed;
-            top: 80px; font-size: 12px;
-            color: rgba(255,255,255,0.5);
-            z-index: 50;
-        }
-        .move-hint.p1 { left: 20px; }
-        .move-hint.p2 { right: 20px; text-align: right; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>犇气对战 - 赛博格斗</title>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #08081a; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; }
+
+/* 选人界面 */
+#selectScreen {
+  position: fixed; inset: 0; z-index: 10;
+  background: radial-gradient(ellipse at 30% 20%, rgba(199,125,255,0.12) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(0,0,255,0.12) 0%, transparent 50%),
+              linear-gradient(180deg, #0a0a1e 0%, #0d0d2a 50%, #080820 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow-y: auto;
+}
+#selectScreen::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+  background:
+    linear-gradient(90deg, transparent 49.5%, rgba(0,255,255,0.08) 50%, transparent 50.5%),
+    linear-gradient(0deg, rgba(0,255,255,0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  transform: perspective(400px) rotateX(60deg);
+  transform-origin: bottom; opacity: 0.6;
+}
+.select-title {
+  font-size: clamp(28px, 5vw, 52px); font-weight: 900; color: #fff;
+  margin-bottom: 8px; text-align: center;
+  background: linear-gradient(90deg, #C77DFF, #00BFFF, #5F9FD6, #C77DFF);
+  background-size: 300% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s linear infinite;
+  text-shadow: none;
+}
+@keyframes gradientShift { to { background-position: 300% center; } }
+.select-subtitle {
+  font-size: clamp(14px, 2vw, 20px); color: rgba(255,255,255,0.5);
+  margin-bottom: 30px; text-align: center; letter-spacing: 4px;
+}
+.pick-hint {
+  font-size: clamp(14px, 2vw, 20px); font-weight: bold;
+  margin-bottom: 24px; padding: 8px 28px; border-radius: 30px;
+  background: rgba(255,255,255,0.05); border: 2px solid;
+  transition: all 0.4s;
+}
+.char-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: clamp(12px, 2vw, 24px);
+  max-width: min(900px, 95vw);
+  width: min(900px, 95vw);
+  padding: 0 10px 20px;
+  position: relative; z-index: 2;
+}
+.char-card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: clamp(14px,2vw,22px);
+  cursor: pointer; transition: all 0.3s ease; position: relative;
+  overflow: hidden;
+}
+.char-card::before {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, var(--card-color) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.char-card:hover:not(.disabled):not(.selected-p1):not(.selected-p2) {
+  transform: translateY(-6px);
+  border-color: var(--card-color);
+  box-shadow: 0 12px 40px var(--card-shadow), 0 0 60px var(--card-shadow);
+}
+.char-card:hover:not(.disabled):not(.selected-p1):not(.selected-p2)::before { opacity: 0.12; }
+.char-card.selected-p1 {
+  border-color: #C77DFF;
+  box-shadow: 0 0 30px rgba(199,125,255,0.4), inset 0 0 30px rgba(199,125,255,0.08);
+  background: rgba(199,125,255,0.08);
+}
+.char-card.selected-p2 {
+  border-color: #0000FF;
+  box-shadow: 0 0 30px rgba(0,0,255,0.4), inset 0 0 30px rgba(0,0,255,0.08);
+  background: rgba(0,0,255,0.08);
+}
+.char-card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(0.7); }
+.card-badge { position: absolute; top: 12px; right: 12px; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.badge-p1 { background: #C77DFF; color: #fff; }
+.badge-p2 { background: #0000FF; color: #fff; }
+.char-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; position: relative; z-index: 1; }
+.char-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--card-color);
+  box-shadow: 0 0 20px var(--card-shadow);
+  background: rgba(0,0,0,0.3);
+  font-size: 28px;
+}
+.char-name { font-size: clamp(18px,2.2vw,24px); font-weight: bold; color: #fff; }
+.char-tag { font-size: 11px; color: var(--card-color); opacity: 0.8; letter-spacing: 2px; margin-top: 2px; }
+.char-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 14px; position: relative; z-index: 1; }
+.stat { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 6px 4px; text-align: center; }
+.stat-val { font-size: clamp(14px,1.8vw,18px); font-weight: bold; color: var(--card-color); }
+.stat-label { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.char-skills { position: relative; z-index: 1; }
+.skill-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: clamp(11px,1.4vw,13px); color: rgba(255,255,255,0.75); line-height: 1.4; }
+.skill-key { flex-shrink: 0; background: var(--card-color); color: #000; font-weight: bold; width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-top: 1px; }
+.start-btn {
+  margin-top: 10px; padding: 14px 60px; font-size: 20px; font-weight: bold; color: #fff;
+  background: linear-gradient(135deg, #C77DFF, #0000FF); border: none; border-radius: 40px;
+  cursor: pointer; transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(199,125,255,0.3); position: relative; z-index: 2;
+  opacity: 0.4; pointer-events: none; letter-spacing: 3px;
+}
+.start-btn.active { opacity: 1; pointer-events: auto; }
+.start-btn.active:hover { transform: scale(1.05); box-shadow: 0 12px 40px rgba(199,125,255,0.5); }
+
+/* 技能按钮 - 游戏中 */
+#skillBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 5; pointer-events: none; display: none; padding: 8px 12px; }
+.skill-row { display: flex; justify-content: space-between; align-items: flex-end; }
+.skill-group { display: flex; gap: 6px; pointer-events: auto; }
+.skill-group.p1 .sk-btn { border-color: rgba(199,125,255,0.5); color: #C77DFF; background: rgba(199,125,255,0.1); }
+.skill-group.p1 .sk-btn.attack { background: rgba(199,125,255,0.3); border-color: #C77DFF; color: #fff; }
+.skill-group.p2 .sk-btn { border-color: rgba(0,0,255,0.5); color: #6688FF; background: rgba(0,0,255,0.1); }
+.skill-group.p2 .sk-btn.attack { background: rgba(0,0,255,0.3); border-color: #4466FF; color: #fff; }
+.sk-btn {
+  border: 2px solid; border-radius: 10px; padding: 6px 10px;
+  font-size: 11px; font-weight: bold; text-align: center;
+  cursor: pointer; backdrop-filter: blur(8px); transition: all 0.1s;
+  min-width: 54px; line-height: 1.3;
+}
+.sk-btn:active, .sk-btn.pressed { transform: scale(0.9); filter: brightness(1.8); box-shadow: 0 0 20px currentColor; }
+.sk-btn .k { font-size: 13px; display: block; }
+.sk-btn .n { font-size: 9px; opacity: 0.8; display: block; margin-top: 1px; }
+.sk-btn.cooling { opacity: 0.4; }
+
+/* 移动端虚拟摇杆 */
+#mobileControls { position: fixed; inset: 0; z-index: 6; display: none; pointer-events: none; }
+.joy-area { position: absolute; bottom: 100px; width: 140px; height: 140px; pointer-events: auto; }
+.joy-area.left { left: 20px; }
+.joy-area.right { right: 20px; }
+.joy-base { width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); position: absolute; top: 0; left: 0; }
+.joy-stick { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); position: absolute; top: 40px; left: 40px; pointer-events: none; }
+.m-jump { position: absolute; right: 180px; bottom: 130px; width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); color: #fff; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; pointer-events: auto; }
+.m-skills { position: absolute; right: 20px; bottom: 100px; display: flex; flex-wrap: wrap; gap: 8px; width: 200px; justify-content: flex-end; pointer-events: auto; }
+.m-sk-btn { width: 58px; height: 58px; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; }
+.m-sk-btn.p1 { border-color: #C77DFF; background: rgba(199,125,255,0.3); }
+.m-sk-btn.p2 { border-color: #4466FF; background: rgba(0,0,255,0.3); }
+
+/* 胜利画面 */
+#winScreen { position: fixed; inset: 0; z-index: 20; display: none; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; flex-direction: column; }
+.win-text { font-size: clamp(36px,8vw,72px); font-weight: 900; margin-bottom: 30px; }
+.win-sub { font-size: 20px; color: rgba(255,255,255,0.6); margin-bottom: 36px; }
+.restart-btn { padding: 14px 50px; font-size: 20px; font-weight: bold; color: #fff; background: linear-gradient(135deg,#C77DFF,#0000FF); border: none; border-radius: 40px; cursor: pointer; }
+.restart-btn:hover { transform: scale(1.05); }
+</style>
 </head>
 <body>
-    <!-- 开始界面 -->
-    <div id="startScreen" class="screen">
-        <div class="game-title">犇 气 对 战</div>
-        <div style="color: rgba(255,255,255,0.8); margin-bottom: 10px; font-size: 14px;">
-            🎮 双人本地对战 · 赛博格斗场
-        </div>
-        <div class="char-info">
-            <div class="char-card" style="border-color: #C77DFF;">
-                <div class="char-name" style="color: #C77DFF;">🟣 投机者</div>
-                <div class="char-stats">
-                    <div>❤ 血量: 300</div>
-                    <div>⚡ 犇气: 300</div>
-                    <div>⚔ 普攻: 4 | 👟 移速: 快</div>
-                    <div style="margin-top:6px; color:#C77DFF; font-weight:bold">技能：</div>
-                    <div>🤝 Q - 投机：成为手下，继承技能(50)</div>
-                    <div>💰 被动 - 贿赂：100犇气自动免伤</div>
-                    <div>📋 E - 复刻：复制对方技能1/3属性(50)</div>
-                </div>
-            </div>
-            <div class="char-card" style="border-color: #0000FF;">
-                <div class="char-name" style="color: #4444FF;">🔵 RP狂魔</div>
-                <div class="char-stats">
-                    <div>❤ 血量: 300</div>
-                    <div>⚡ 犇气: 275</div>
-                    <div>⚔ 普攻: 6 | 👟 移速: 慢</div>
-                    <div style="margin-top:6px; color:#4444FF; font-weight:bold">技能：</div>
-                    <div>📚 I - 刷RP：每秒+1犇气(不能动)</div>
-                    <div>💥 O - RP攻击：2犇气=1伤害</div>
-                    <div>🛡 P - 做题：每秒-10犇气(无敌)</div>
-                    <div>💚 K - 发题解：回血(50犇气)</div>
-                </div>
-            </div>
-        </div>
-        <button class="start-btn" onclick="startGame()">开始对战</button>
-        <div class="controls-hint">
-            <div>⌨ P1(紫)：<b>A/D</b>移动 <b>W</b>跳跃 <b>F</b>攻击 <b>Q</b>投机 <b>E</b>复刻</div>
-            <div>⌨ P2(蓝)：<b>←/→</b>移动 <b>↑</b>跳跃 <b>L</b>攻击 <b>I</b>刷RP <b>O</b>RP弹 <b>P</b>无敌 <b>K</b>回血</div>
-            <div>💡 技能按钮就在屏幕下方，直接点也能放技能！</div>
-        </div>
-    </div>
-    
-    <!-- 游戏结束界面 -->
-    <div id="endScreen" class="screen hidden">
-        <div id="winnerText" class="winner-text"></div>
-        <button class="start-btn" onclick="restartGame()">再来一局</button>
-    </div>
-    
-    <!-- PC端常驻技能栏 - P1 (左侧紫色) -->
-    <div class="skill-bar-pc p1" id="pcP1Controls">
-        <div class="skill-key p1-skill" data-action="skill1">
-            <span class="key-name">Q</span><span>投机</span>
-        </div>
-        <div class="skill-key p1-skill" data-action="skill3">
-            <span class="key-name">E</span><span>复刻</span>
-        </div>
-        <div class="skill-key attack" data-action="attack">
-            <span class="key-name">F</span><span>攻击</span>
-        </div>
-    </div>
-    
-    <!-- PC端常驻技能栏 - P2 (右侧蓝色) -->
-    <div class="skill-bar-pc p2" id="pcP2Controls">
-        <div class="skill-key p2-skill" data-action="skill1">
-            <span class="key-name">I</span><span>刷RP</span>
-        </div>
-        <div class="skill-key p2-skill" data-action="skill2">
-            <span class="key-name">O</span><span>RP弹</span>
-        </div>
-        <div class="skill-key p2-skill" data-action="skill3">
-            <span class="key-name">P</span><span>无敌</span>
-        </div>
-        <div class="skill-key p2-skill" data-action="skill4">
-            <span class="key-name">K</span><span>回血</span>
-        </div>
-        <div class="skill-key attack" data-action="attack">
-            <span class="key-name">L</span><span>攻击</span>
-        </div>
-    </div>
-    
-    <!-- 移动端P1控制 -->
-    <div class="mobile-controls p1" id="mobileP1Controls">
-        <div class="dpad-mobile">
-            <div></div>
-            <button class="dpad-btn" data-key="w">↑</button>
-            <div></div>
-            <button class="dpad-btn" data-key="a">←</button>
-            <div></div>
-            <button class="dpad-btn" data-key="d">→</button>
-            <div></div><div></div><div></div>
-        </div>
-        <div class="skills-mobile">
-            <button class="skill-btn-mobile" data-action="skill1" style="border-color:#C77DFF">
-                <span class="key-name" style="color:#C77DFF">Q</span><span>投机</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="skill3" style="border-color:#C77DFF">
-                <span class="key-name" style="color:#C77DFF">E</span><span>复刻</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="attack" style="border-color:#ff6b6b">
-                <span class="key-name" style="color:#ff6b6b">F</span><span>攻击</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- 移动端P2控制 -->
-    <div class="mobile-controls p2" id="mobileP2Controls">
-        <div class="skills-mobile">
-            <button class="skill-btn-mobile" data-action="skill1" style="border-color:#0000FF">
-                <span class="key-name" style="color:#4444FF">I</span><span>刷RP</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="skill2" style="border-color:#0000FF">
-                <span class="key-name" style="color:#4444FF">O</span><span>RP弹</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="skill3" style="border-color:#0000FF">
-                <span class="key-name" style="color:#4444FF">P</span><span>无敌</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="skill4" style="border-color:#0000FF">
-                <span class="key-name" style="color:#4444FF">K</span><span>回血</span>
-            </button>
-            <button class="skill-btn-mobile" data-action="attack" style="border-color:#ff6b6b">
-                <span class="key-name" style="color:#ff6b6b">L</span><span>攻击</span>
-            </button>
-        </div>
-        <div class="dpad-mobile" style="margin-top: 10px; margin-bottom: 0;">
-            <div></div>
-            <button class="dpad-btn" data-key="ArrowUp">↑</button>
-            <div></div>
-            <button class="dpad-btn" data-key="ArrowLeft">←</button>
-            <div></div>
-            <button class="dpad-btn" data-key="ArrowRight">→</button>
-            <div></div><div></div><div></div>
-        </div>
-    </div>
-    
-    <div class="move-hint p1" id="moveHintP1">W跳跃 A/D移动</div>
-    <div class="move-hint p2" id="moveHintP2">↑跳跃 ←/→移动</div>
 
-    <script>
-        let gameRunning = false;
-        let canvas;
-        let groundY;
-        let keys = {};
-        let player1, player2;
-        let projectiles = [];
-        let notifications = [];
-        let particles = [];
-        let platforms = [];
-        const GROUND_HEIGHT = 60;
-        const GRAVITY = 0.6;
-        const MOVE_SPEED_P1 = 5;
-        const MOVE_SPEED_P2 = 3.5;
-        const JUMP_POWER = 13;
-        
-        // 静态窗户数据（不闪烁）
-        let windowData = [];
-        
-        function initPlatforms() {
-            platforms = [];
-            let w = canvas.width;
-            let h = canvas.height;
-            // 实心平台（森林冰火人风格，全方位碰撞）
-            platforms.push({x: w*0.1,  y: h*0.70, w: w*0.15, h: 18});
-            platforms.push({x: w*0.30, y: h*0.58, w: w*0.18, h: 18});
-            platforms.push({x: w*0.54, y: h*0.52, w: w*0.16, h: 18});
-            platforms.push({x: w*0.74, y: h*0.63, w: w*0.16, h: 18});
-            platforms.push({x: w*0.04, y: h*0.42, w: w*0.13, h: 18});
-            platforms.push({x: w*0.82, y: h*0.45, w: w*0.14, h: 18});
-            platforms.push({x: w*0.36, y: h*0.33, w: w*0.28, h: 18});
+<div id="selectScreen">
+  <div class="select-title">⚔ 犇 气 对 战 ⚔</div>
+  <div class="select-subtitle">BENQI BRAWL - 赛博格斗场</div>
+  <div class="pick-hint" id="pickHint">请玩家1选择角色</div>
+  <div class="char-grid" id="charGrid"></div>
+  <button class="start-btn" id="startBtn" onclick="startGame()">开 始 对 战</button>
+</div>
+
+<div id="skillBar">
+  <div class="skill-row">
+    <div class="skill-group p1" id="p1Skills"></div>
+    <div class="skill-group p2" id="p2Skills"></div>
+  </div>
+</div>
+
+<div id="mobileControls">
+  <div class="joy-area left" id="joyLeft">
+    <div class="joy-base"></div>
+    <div class="joy-stick" id="stickL"></div>
+  </div>
+  <div class="m-jump" id="mJump">跳</div>
+  <div class="m-skills" id="mSkills"></div>
+</div>
+
+<div id="winScreen">
+  <div class="win-text" id="winText"></div>
+  <div class="win-sub" id="winSub"></div>
+  <button class="restart-btn" id="restartBtn">再 来 一 局</button>
+</div>
+
+<script>
+// ==================== 角色数据 ====================
+const CHARACTERS = {
+  speculator: {
+    name: '投机者', color: '#C77DFF', emoji: '🎭',
+    hp: 300, atk: 4, bq: 300, spd: 4.2,
+    skills: [
+      { key:'Q', name:'投机', cost:50, desc:'近距离窃取对手一个技能' },
+      { key:'E', name:'贿赂', cost:0, desc:'被攻击自动用100犇气免除伤害' },
+      { key:'R', name:'复刻', cost:50, desc:'复制对手技能，威力为原版1/3' }
+    ]
+  },
+  rpmaniac: {
+    name: 'RP狂魔', color: '#0000FF', emoji: '📝',
+    hp: 300, atk: 6, bq: 275, spd: 3,
+    skills: [
+      { key:'U', name:'刷RP', cost:0, desc:'原地不动，每秒+5犇气' },
+      { key:'I', name:'RP攻击', cost:0, desc:'2犇气=1伤害，发射能量弹' },
+      { key:'O', name:'做题', cost:0, desc:'每秒-10犇气，免疫一切伤害' },
+      { key:'K', name:'发题解', cost:50, desc:'恢复30点血量' }
+    ]
+  },
+  dismantler: {
+    name: '人体拆卸者', color: '#5F9FD6', emoji: '🔧',
+    hp: 325, atk: 6, bq: 300, spd: 3.4,
+    skills: [
+      { key:'U', name:'声音检测', cost:75, desc:'音波冲击造成50点伤害' },
+      { key:'I', name:'卸胳膊', cost:50, desc:'近身20伤害+减速25%持续5秒' },
+      { key:'O', name:'拆解', cost:175, desc:'近身大招造成135点巨额伤害' }
+    ]
+  },
+  corrector: {
+    name: '修正者', color: '#1369A5', emoji: '⚙️',
+    hp: 285, atk: 6.5, bq: 300, spd: 2.8,
+    skills: [
+      { key:'U', name:'修正', cost:45, desc:'恢复血量上限的1/5（57点）' },
+      { key:'I', name:'稍加修改', cost:60, desc:'敌方眩晕5秒并扣除50血量' },
+      { key:'O', name:'逃脱', cost:55, desc:'瞬移脱离包围圈，3秒无敌' }
+    ]
+  }
+};
+
+// ==================== 全局状态 ====================
+let gameState = 'select'; // select / playing / win
+let p1Char = null, p2Char = null;
+let pickingPlayer = 1;
+let p1, p2;
+let platforms = [];
+let projectiles = [];
+let particles = [];
+let shockwaves = [];
+let floatTexts = [];
+let slashEffects = [];
+let bgElements = {};
+let screenShake = 0;
+let isMobile = false;
+
+const P1_KEYS = { left:'A'.charCodeAt(0), right:'D'.charCodeAt(0), jump:'W'.charCodeAt(0),
+                  atk:70, s1:81, s2:69, s3:82 };
+// 方向键这里必须用键盘码数值（LEFT=37 / UP=38 / RIGHT=39），
+// 不要写成 p5 的 LEFT_ARROW 等常量：它们要等页面 load、p5 初始化后才挂到 window，
+// 而本脚本在页面解析时就同步执行，此时这些常量还不存在，会抛 ReferenceError
+// 导致整个脚本中断，后面的 class Fighter 无法初始化（报错就是由此而来）。
+const P2_KEYS = { left:37, right:39, jump:38,
+                  atk:76, s1:85, s2:73, s3:79, s4:75 };
+
+let keys = {};
+let keyPressedOnce = {};
+
+function checkMobile(){
+  isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 800;
+}
+
+// ==================== 选人界面 ====================
+function initSelectScreen(){
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  const ids = Object.keys(CHARACTERS);
+  ids.forEach(id => {
+    const c = CHARACTERS[id];
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.style.setProperty('--card-color', c.color);
+    card.style.setProperty('--card-shadow', c.color+'44');
+    card.dataset.id = id;
+    let skillsHtml = c.skills.map((s,i)=>`
+      <div class="skill-item">
+        <div class="skill-key">${s.key}</div>
+        <div><b>${s.name}</b>${s.cost>0?`(${s.cost}犇气)`:''}：${s.desc}</div>
+      </div>`).join('');
+    card.innerHTML = `
+      <div class="char-header">
+        <div class="char-avatar" style="--card-color:${c.color};--card-shadow:${c.color}66">${c.emoji}</div>
+        <div>
+          <div class="char-name" style="color:${c.color}">${c.name}</div>
+          <div class="char-tag" style="color:${c.color}">CYBER FIGHTER</div>
+        </div>
+      </div>
+      <div class="char-stats">
+        <div class="stat"><div class="stat-val" style="--card-color:${c.color}">${c.hp}</div><div class="stat-label">血量</div></div>
+        <div class="stat"><div class="stat-val" style="--card-color:${c.color}">${c.atk}</div><div class="stat-label">普攻</div></div>
+        <div class="stat"><div class="stat-val" style="--card-color:${c.color}">${c.bq}</div><div class="stat-label">犇气</div></div>
+        <div class="stat"><div class="stat-val" style="--card-color:${c.color}">${Math.round(c.spd*50/4.2*10)/10}</div><div class="stat-label">移速</div></div>
+      </div>
+      <div class="char-skills">${skillsHtml}</div>
+    `;
+    card.addEventListener('click', ()=>pickCharacter(id));
+    grid.appendChild(card);
+  });
+  updatePickHint();
+}
+
+function pickCharacter(id){
+  if(pickingPlayer === 1){
+    if(p2Char === id) return;
+    p1Char = id;
+    pickingPlayer = 2;
+  } else {
+    if(p1Char === id) return;
+    p2Char = id;
+    pickingPlayer = 1;
+  }
+  updateCards();
+  updatePickHint();
+  var btn = document.getElementById('startBtn');
+  if(p1Char && p2Char){
+    btn.classList.add('active');
+    // 直接写 style，绕过 CSS 类可能没生效的问题
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    btn.style.cursor = 'pointer';
+  }
+}
+
+function updateCards(){
+  document.querySelectorAll('.char-card').forEach(card=>{
+    card.classList.remove('selected-p1','selected-p2','disabled');
+    const badge = card.querySelector('.card-badge');
+    if(badge) badge.remove();
+    if(card.dataset.id === p1Char){
+      card.classList.add('selected-p1');
+      const b = document.createElement('div');
+      b.className = 'card-badge badge-p1'; b.textContent = 'P1';
+      card.appendChild(b);
+    }
+    if(card.dataset.id === p2Char){
+      card.classList.add('selected-p2');
+      const b = document.createElement('div');
+      b.className = 'card-badge badge-p2'; b.textContent = 'P2';
+      card.appendChild(b);
+    }
+    if(pickingPlayer===2 && card.dataset.id===p1Char) card.classList.add('disabled');
+    if(pickingPlayer===1 && card.dataset.id===p2Char) card.classList.add('disabled');
+  });
+}
+
+function updatePickHint(){
+  const h = document.getElementById('pickHint');
+  if(pickingPlayer===1){
+    h.textContent = p1Char ? '请玩家1重新选择角色' : '🔮 请玩家1（紫色方）选择角色';
+    h.style.borderColor = '#C77DFF';
+    h.style.color = '#C77DFF';
+    h.style.background = 'rgba(199,125,255,0.08)';
+  } else {
+    h.textContent = p2Char ? '请玩家2重新选择角色' : '🔵 请玩家2（蓝色方）选择角色';
+    h.style.borderColor = '#0000FF';
+    h.style.color = '#6688FF';
+    h.style.background = 'rgba(0,0,255,0.08)';
+  }
+}
+
+document.getElementById('restartBtn').addEventListener('click', ()=>location.reload());
+
+// ==================== 玩家类 ====================
+class Fighter {
+  constructor(x, y, charId, isP1){
+    const c = CHARACTERS[charId];
+    this.charId = charId;
+    this.isP1 = isP1;
+    this.x = x; this.y = y;
+    this.w = 28; this.h = 48;
+    this.vx = 0; this.vy = 0;
+    this.color = c.color;
+    this.name = c.name;
+    this.maxHp = c.hp; this.hp = c.hp;
+    this.atk = c.atk;
+    this.maxBq = c.bq; this.bq = c.bq;
+    this.spd = c.spd;
+    this.onGround = false;
+    this.facing = isP1 ? 1 : -1;
+    this.attackCooldown = 0;
+    this.invincible = 0;
+    this.stunned = 0;
+    this.slowed = 0;
+    this.slowAmount = 0;
+    this.animFrame = 0;
+    this.walkCycle = 0;
+    this.attackAnim = 0;
+    this.hurtFlash = 0;
+    this.chargingRP = false;
+    this.immortal = false;
+    this.immortalTime = 0;
+    this.teleportInvuln = 0;
+    this.stolenSkills = [];
+    this.copiedSkill = null;
+    this.armAngle = 0;
+    this.legAngle = 0;
+  }
+
+  get effectiveSpd(){
+    let s = this.spd;
+    if(this.slowed > 0) s *= (1 - this.slowAmount);
+    return s;
+  }
+
+  update(opponent){
+    if(this.hp <= 0) return;
+    if(this.attackCooldown > 0) this.attackCooldown--;
+    if(this.invincible > 0) this.invincible--;
+    if(this.stunned > 0){ this.stunned--; this.vx *= 0.8; }
+    if(this.slowed > 0) this.slowed--;
+    if(this.hurtFlash > 0) this.hurtFlash--;
+    if(this.attackAnim > 0) this.attackAnim--;
+    if(this.teleportInvuln > 0) this.teleportInvuln--;
+
+    if(this.charId === 'rpmaniac'){
+      if(this.chargingRP){
+        this.bq = Math.min(this.maxBq, this.bq + 5/60 * 60);
+        this.vx = 0;
+        this.bq = Math.min(this.maxBq, this.bq + 1);
+        if(frameCount % 10 === 0){
+          spawnParticles(this.x, this.y - this.h/2, this.color, 2, 1);
         }
-        
-        function initWindowData() {
-            windowData = [];
-            let w = canvas.width, gy = groundY;
-            // 左侧建筑窗户
-            for (let bx = 8; bx < 75; bx += 12) {
-                for (let by = gy - 160; by < gy - 10; by += 15) {
-                    if (Math.random() > 0.4) windowData.push({x:bx, y:by, w:6, h:8, c:'m'});
-                }
-            }
-            for (let bx = 85; bx < 135; bx += 10) {
-                for (let by = gy - 230; by < gy - 10; by += 12) {
-                    if (Math.random() > 0.3) windowData.push({x:bx, y:by, w:5, h:7, c:'c'});
-                }
-            }
-            for (let bx = 145; bx < 185; bx += 12) {
-                for (let by = gy - 140; by < gy - 10; by += 15) {
-                    if (Math.random() > 0.45) windowData.push({x:bx, y:by, w:6, h:8, c:'m'});
-                }
-            }
-            // 右侧建筑窗户
-            for (let bx = w - 65; bx < w - 5; bx += 12) {
-                for (let by = gy - 200; by < gy - 10; by += 15) {
-                    if (Math.random() > 0.4) windowData.push({x:bx, y:by, w:6, h:8, c:'m'});
-                }
-            }
-            for (let bx = w - 125; bx < w - 75; bx += 10) {
-                for (let by = gy - 150; by < gy - 10; by += 12) {
-                    if (Math.random() > 0.35) windowData.push({x:bx, y:by, w:5, h:7, c:'c'});
-                }
-            }
-            for (let bx = w - 185; bx < w - 135; bx += 10) {
-                for (let by = gy - 260; by < gy - 10; by += 12) {
-                    if (Math.random() > 0.35) windowData.push({x:bx, y:by, w:5, h:7, c:'g'});
-                }
-            }
+      }
+      if(this.immortal){
+        this.bq -= 10/60;
+        if(this.bq <= 0){ this.immortal = false; this.bq = 0; }
+        if(frameCount % 6 === 0){
+          spawnParticles(this.x + random(-15,15), this.y - random(0,this.h), '#00FFFF', 1, 0.5);
         }
-        
-        function showNotification(text, color) {
-            color = color || '#ffcc00';
-            notifications.push({text, color, time: Date.now()});
+      }
+    }
+
+    if(this.stunned <= 0 && !this.chargingRP){
+      const left = this.isP1 ? (keys[P1_KEYS.left] || (this.isP1 && mInput.left)) : (keys[P2_KEYS.left] || (!this.isP1 && mInput.left));
+      const right = this.isP1 ? (keys[P1_KEYS.right] || (this.isP1 && mInput.right)) : (keys[P2_KEYS.right] || (!this.isP1 && mInput.right));
+      const jump = this.isP1 ? (keyPressedOnce[P1_KEYS.jump] || (this.isP1 && mInput.jump)) : (keyPressedOnce[P2_KEYS.jump] || (!this.isP1 && mInput.jump));
+      if(this.isP1 && mInput.jump) mInput.jump = false;
+      if(!this.isP1 && mInput.jump2) mInput.jump2 = false;
+
+      if(left){ this.vx = -this.effectiveSpd; this.facing = -1; }
+      else if(right){ this.vx = this.effectiveSpd; this.facing = 1; }
+      else this.vx *= 0.75;
+
+      if(jump && this.onGround){
+        this.vy = -11.5;
+        this.onGround = false;
+        spawnParticles(this.x, this.y, this.color, 5, 1.5);
+      }
+    }
+
+    this.vy += 0.55;
+    if(this.vy > 15) this.vy = 15;
+
+    this.x += this.vx;
+    this.handleCollisionX();
+    this.x += this.vy > 0 ? 0 : 0;
+    this.y += this.vy;
+    this.onGround = false;
+    this.handleCollisionY();
+
+    if(this.x < this.w/2) this.x = this.w/2;
+    if(this.x > width - this.w/2) this.x = width - this.w/2;
+    if(this.y > height + 100){
+      this.takeDamage(30, this.x, this.y, '#FF0044');
+      this.x = this.isP1 ? 150 : width - 150;
+      this.y = height - 200;
+      this.vx = 0; this.vy = 0;
+      this.invincible = 60;
+    }
+
+    if(Math.abs(this.vx) > 0.5 && this.onGround){
+      this.walkCycle += 0.25;
+    } else {
+      this.walkCycle *= 0.8;
+    }
+
+    if(frameCount % 30 === 0 && this.bq < this.maxBq) this.bq = Math.min(this.maxBq, this.bq + 1);
+
+    this.animFrame++;
+  }
+
+  handleCollisionX(){
+    for(let p of platforms){
+      if(this.x + this.w/2 > p.x && this.x - this.w/2 < p.x + p.w){
+        if(this.y - this.h + 2 > p.y - 2 && this.y < p.y + p.h + 2){
+          if(this.vx > 0){ this.x = p.x - this.w/2; this.vx = 0; }
+          else if(this.vx < 0){ this.x = p.x + p.w + this.w/2; this.vx = 0; }
         }
-        
-        function createParticles(x, y, color, count) {
-            count = count || 10;
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 8,
-                    vy: (Math.random() - 0.5) * 8 - 2,
-                    life: 30, maxLife: 30, color,
-                    size: Math.random() * 6 + 2
-                });
-            }
+      }
+    }
+  }
+
+  handleCollisionY(){
+    for(let p of platforms){
+      if(this.x + this.w/2 > p.x && this.x - this.w/2 < p.x + p.w){
+        if(this.vy >= 0 && this.y >= p.y && this.y - this.vy <= p.y + 2){
+          this.y = p.y; this.vy = 0; this.onGround = true;
+        } else if(this.vy < 0 && this.y - this.h <= p.y + p.h && this.y - this.h - this.vy >= p.y + p.h - 2){
+          this.y = p.y + p.h + this.h; this.vy = 0;
         }
-        
-        // AABB碰撞
-        function rectOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
-            return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+      }
+    }
+  }
+
+  takeDamage(dmg, fromX, fromY, dmgColor){
+    if(this.invincible > 0 || this.hp <= 0) return false;
+    if(this.immortal){
+      floatTexts.push({x:this.x, y:this.y-this.h-10, text:'免疫!', color:'#00FFFF', life:40, vy:-1.5});
+      spawnParticles(this.x, this.y-this.h/2, '#00FFFF', 8, 2);
+      return false;
+    }
+    if(this.teleportInvuln > 0){
+      floatTexts.push({x:this.x, y:this.y-this.h-10, text:'闪避!', color:this.color, life:40, vy:-1.5});
+      spawnParticles(this.x, this.y-this.h/2, this.color, 8, 2);
+      return false;
+    }
+    if(this.charId === 'speculator' && this.bq >= 100){
+      this.bq -= 100;
+      floatTexts.push({x:this.x, y:this.y-this.h-10, text:'贿赂!', color:'#FFD700', life:50, vy:-1.5});
+      spawnParticles(this.x, this.y-this.h/2, '#FFD700', 15, 3);
+      screenShake = 5;
+      return false;
+    }
+    this.hp -= dmg;
+    this.hurtFlash = 12;
+    this.invincible = 20;
+    const dir = this.x > fromX ? 1 : -1;
+    this.vx = dir * 5;
+    this.vy = -3;
+    floatTexts.push({x:this.x+random(-10,10), y:this.y-this.h-5-random(0,10), text:'-'+Math.round(dmg), color:dmgColor||'#FF4444', life:50, vy:-2});
+    spawnParticles(this.x, this.y-this.h/2, dmgColor||'#FF4444', 10, 3);
+    screenShake = Math.max(screenShake, 6);
+    if(this.hp <= 0){ this.hp = 0; }
+    return true;
+  }
+
+  attack(opponent){
+    if(this.attackCooldown > 0 || this.stunned > 0 || this.chargingRP) return;
+    this.attackCooldown = 25;
+    this.attackAnim = 15;
+    const reach = 45;
+    const ax = this.x + this.facing * 30;
+    slashEffects.push({
+      x: ax, y: this.y - this.h/2,
+      angle: this.facing > 0 ? 0 : PI,
+      color: this.color, life: 12, maxLife: 12,
+      range: reach
+    });
+    const dist = abs(opponent.x - ax);
+    const dy = abs((opponent.y - opponent.h/2) - (this.y - this.h/2));
+    if(dist < reach && dy < 50){
+      if((this.facing > 0 && opponent.x > this.x - 5) || (this.facing < 0 && opponent.x < this.x + 5)){
+        opponent.takeDamage(this.atk, this.x, this.y, this.color);
+      }
+    }
+    spawnParticles(ax, this.y - this.h/2, this.color, 5, 2);
+  }
+
+  useSkill(idx, opponent){
+    if(this.stunned > 0) return;
+    switch(this.charId){
+      case 'speculator': this.speculatorSkill(idx, opponent); break;
+      case 'rpmaniac': this.rpSkill(idx, opponent); break;
+      case 'dismantler': this.dismantlerSkill(idx, opponent); break;
+      case 'corrector': this.correctorSkill(idx, opponent); break;
+    }
+  }
+
+  speculatorSkill(idx, opponent){
+    const dist = abs(opponent.x - this.x);
+    if(idx === 0){
+      if(this.bq < 50){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      if(dist > 60){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'太远了',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 50;
+      const oppSkills = CHARACTERS[opponent.charId].skills;
+      if(oppSkills.length > 0 && this.stolenSkills.length < 3){
+        const sk = oppSkills[Math.floor(Math.random()*Math.min(3,oppSkills.length))];
+        this.stolenSkills.push(sk);
+        floatTexts.push({x:this.x,y:this.y-this.h-20,text:'偷到「'+sk.name+'」',color:'#C77DFF',life:60,vy:-1.5});
+        for(let i=0;i<20;i++) spawnParticles(this.x, this.y-this.h/2, '#C77DFF', 1, 3);
+        screenShake = 8;
+      }
+    } else if(idx === 1){
+      if(this.bq < 100){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 100;
+      this.invincible = 60;
+      floatTexts.push({x:this.x,y:this.y-this.h-10,text:'贿赂防御!',color:'#FFD700',life:50,vy:-1.5});
+      for(let i=0;i<20;i++) spawnParticles(this.x, this.y-this.h/2, '#FFD700', 1, 2.5);
+    } else if(idx === 2){
+      if(this.bq < 50){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 50;
+      projectiles.push({
+        x: this.x + this.facing*20, y: this.y - this.h/2,
+        vx: this.facing * 7, vy: 0,
+        dmg: 0, color: this.color, owner: this, type: 'copy', life: 90, r: 12, trail: []
+      });
+      spawnParticles(this.x+this.facing*20, this.y-this.h/2, this.color, 8, 2);
+    }
+  }
+
+  rpSkill(idx, opponent){
+    if(idx === 0){
+      this.chargingRP = !this.chargingRP;
+      if(this.chargingRP){ this.vx=0; this.vy=0; floatTexts.push({x:this.x,y:this.y-this.h-10,text:'刷RP中...',color:this.color,life:40,vy:-1.5}); }
+    } else if(idx === 1){
+      if(this.bq < 2){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      if(this.chargingRP) this.chargingRP = false;
+      const cost = Math.min(this.bq, 40);
+      const dmg = cost / 2;
+      this.bq -= cost;
+      projectiles.push({
+        x: this.x + this.facing*20, y: this.y - this.h/2,
+        vx: this.facing * 9, vy: 0,
+        dmg: dmg, color: '#0088FF', owner: this, type: 'energy', life: 80, r: 8+dmg/8, trail: []
+      });
+      spawnParticles(this.x+this.facing*20, this.y-this.h/2, '#0088FF', 10, 2);
+      screenShake = 3;
+    } else if(idx === 2){
+      if(this.bq < 10){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); this.immortal=false; return; }
+      this.immortal = !this.immortal;
+      if(this.immortal){ this.chargingRP = false; this.vx=0; floatTexts.push({x:this.x,y:this.y-this.h-10,text:'做题无敌!',color:'#00FFFF',life:50,vy:-1.5}); }
+    } else if(idx === 3){
+      if(this.bq < 50){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 50;
+      const heal = 30;
+      this.hp = Math.min(this.maxHp, this.hp + heal);
+      floatTexts.push({x:this.x,y:this.y-this.h-10,text:'+'+heal,color:'#00FF88',life:50,vy:-1.5});
+      for(let i=0;i<15;i++) spawnParticles(this.x, this.y-this.h/2+random(-20,0), '#00FF88', 1, 2);
+    }
+  }
+
+  dismantlerSkill(idx, opponent){
+    const dist = abs(opponent.x - this.x);
+    const dy = abs((opponent.y - opponent.h/2) - (this.y - this.h/2));
+    if(idx === 0){
+      if(this.bq < 75){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 75;
+      shockwaves.push({
+        x: this.x, y: this.y - this.h/2,
+        r: 10, maxR: 250, color: '#5F9FD6', life: 40, owner: this,
+        dmg: 50, hit: new Set()
+      });
+      screenShake = 10;
+      for(let i=0;i<25;i++) spawnParticles(this.x, this.y-this.h/2, '#5F9FD6', 1, 4);
+    } else if(idx === 1){
+      if(this.bq < 50){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      if(dist > 60 || dy > 50){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'太远了',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 50;
+      opponent.takeDamage(20, this.x, this.y, this.color);
+      opponent.slowed = 300;
+      opponent.slowAmount = 0.25;
+      floatTexts.push({x:opponent.x,y:opponent.y-opponent.h-20,text:'减速!',color:'#5F9FD6',life:60,vy:-1.5});
+      slashEffects.push({x:opponent.x,y:opponent.y-opponent.h/2,angle:0,color:'#5F9FD6',life:15,maxLife:15,range:50});
+      screenShake = 6;
+      for(let i=0;i<12;i++) spawnParticles(opponent.x, opponent.y-opponent.h/2, '#5F9FD6', 1, 3);
+    } else if(idx === 2){
+      if(this.bq < 175){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      if(dist > 65 || dy > 55){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'太远了',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 175;
+      shockwaves.push({
+        x: (this.x+opponent.x)/2, y: opponent.y - opponent.h/2,
+        r: 5, maxR: 100, color: '#FF3333', life: 30, owner: this,
+        dmg: 135, hit: new Set(), singleTarget: opponent
+      });
+      screenShake = 15;
+      for(let i=0;i<40;i++) spawnParticles(opponent.x, opponent.y-opponent.h/2, '#FF3333', 1, 5);
+      for(let i=0;i<20;i++) spawnParticles(opponent.x, opponent.y-opponent.h/2, '#FFAA00', 1, 4);
+    }
+  }
+
+  correctorSkill(idx, opponent){
+    if(idx === 0){
+      if(this.bq < 45){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 45;
+      const heal = Math.floor(this.maxHp / 5);
+      this.hp = Math.min(this.maxHp, this.hp + heal);
+      floatTexts.push({x:this.x,y:this.y-this.h-10,text:'+'+heal,color:'#44CCFF',life:60,vy:-1.5});
+      for(let i=0;i<20;i++){
+        particles.push({
+          x: this.x + random(-20,20), y: this.y,
+          vx: random(-1,1), vy: random(-4,-2),
+          life: 40, maxLife: 40, color: '#1369A5', r: random(2,5)
+        });
+      }
+      shockwaves.push({x:this.x, y:this.y-this.h/2, r:5, maxR:80, color:'#1369A5', life:30, owner:this, dmg:0, hit:new Set()});
+    } else if(idx === 1){
+      if(this.bq < 60){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      const dist = abs(opponent.x - this.x);
+      if(dist > 350){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'太远了',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 60;
+      projectiles.push({
+        x: this.x + this.facing*20, y: this.y - this.h/2,
+        vx: this.facing * 8, vy: 0,
+        dmg: 50, color: '#1369A5', owner: this, type: 'stun', life: 80, r: 14, trail: [], stunDur: 300
+      });
+      for(let i=0;i<10;i++) spawnParticles(this.x+this.facing*20, this.y-this.h/2, '#1369A5', 1, 2);
+    } else if(idx === 2){
+      if(this.bq < 55){ floatTexts.push({x:this.x,y:this.y-this.h-10,text:'犇气不足',color:'#FF0',life:40,vy:-1.5}); return; }
+      this.bq -= 55;
+      this.teleportInvuln = 180;
+      const dir = this.x < opponent.x ? -1 : 1;
+      const targetX = this.x + dir * 200;
+      for(let i=0;i<15;i++) spawnParticles(this.x, this.y-this.h/2, this.color, 1, 3);
+      this.x = constrain(targetX, 50, width-50);
+      this.y = this.y - 20;
+      this.vy = -5;
+      for(let i=0;i<25;i++) spawnParticles(this.x, this.y-this.h/2, this.color, 1, 4);
+      floatTexts.push({x:this.x,y:this.y-this.h-10,text:'逃脱!',color:this.color,life:50,vy:-1.5});
+      screenShake = 6;
+    }
+  }
+
+  draw(){
+    push();
+    const cx = this.x, cy = this.y;
+    if((this.invincible > 0 && frameCount % 4 < 2) || this.teleportInvuln > 0){
+      if(this.teleportInvuln === 0 || frameCount % 3 < 2){
+        // 闪烁
+      } else {
+        pop(); return;
+      }
+    }
+
+    fill(0, 0, 0, 100); noStroke();
+    ellipse(cx, cy+1, 22, 6);
+
+    if(this.immortal){
+      noFill(); strokeWeight(3);
+      stroke(0,255,255,150+sin(frameCount*0.2)*80);
+      circle(cx, cy - this.h/2, 65 + sin(frameCount*0.15)*5);
+      stroke(0,200,255,80); strokeWeight(1);
+      circle(cx, cy - this.h/2, 80);
+    }
+    if(this.teleportInvuln > 0){
+      noFill(); strokeWeight(2);
+      stroke(red(this.color),green(this.color),blue(this.color),180);
+      circle(cx, cy - this.h/2, 60 + sin(frameCount*0.3)*8);
+    }
+    if(this.chargingRP){
+      noFill(); strokeWeight(2);
+      stroke(0,100,255,150+sin(frameCount*0.2)*100);
+      circle(cx, cy - this.h/2, 50 + sin(frameCount*0.1)*6);
+      fill(0,150,255,40); noStroke();
+      circle(cx, cy - this.h/2, 40);
+    }
+    if(this.slowed > 0){
+      noFill(); strokeWeight(2);
+      stroke(95,159,214,120+sin(frameCount*0.3)*60);
+      circle(cx, cy - this.h/2, 55);
+    }
+
+    const col = this.hurtFlash > 0 ? color(255,255,255) : color(this.color);
+    const bodyBottom = cy;
+    const bodyTop = cy - this.h;
+    const headY = bodyTop + 8;
+    const hipY = cy - 2;
+    const shoulderY = bodyTop + 16;
+    const walkSwing = sin(this.walkCycle) * 0.5;
+    const attackSwing = this.attackAnim > 0 ? sin((1-this.attackAnim/15)*PI) * 1.2 : 0;
+
+    stroke(col); strokeWeight(3.5);
+    const legSwing = this.onGround ? walkSwing : 0.3;
+    line(cx-5, hipY, cx-5+sin(legSwing)*8, cy);
+    line(cx+5, hipY, cx+5-sin(legSwing)*8, cy);
+
+    strokeWeight(3.5);
+    line(cx, shoulderY, cx, hipY);
+
+    const armSwing = this.onGround ? -walkSwing : 0.2;
+    const backArmDir = -this.facing;
+    const backHandX = cx + backArmDir*4 + cos(armSwing*0.5+PI/2+0.3)*12;
+    const backHandY = shoulderY + 18 + sin(armSwing*0.5+PI/2+0.3)*3;
+    line(cx, shoulderY, backHandX, backHandY);
+
+    const frontArmBaseAngle = this.facing > 0 ? 0.3 : PI - 0.3;
+    const attackAngle = this.facing > 0 ? -attackSwing*0.8 : PI + attackSwing*0.8;
+    const finalAngle = this.attackAnim > 0 ? attackAngle : frontArmBaseAngle;
+    const armLen = 15 + (this.attackAnim>0 ? 12 : 0);
+    const fhx = cx + cos(finalAngle) * armLen;
+    const fhy = shoulderY + sin(finalAngle) * armLen + 5;
+    line(cx, shoulderY, fhx, fhy);
+
+    noStroke(); fill(col);
+    circle(fhx, fhy, this.attackAnim>0 ? 8 : 5);
+
+    fill(col); noStroke();
+    circle(cx, headY, 14);
+    fill(0);
+    circle(cx + this.facing*3, headY-1, 2.5);
+    if(this.stunned > 0){
+      fill(255,200,0);
+      textSize(14); textAlign(CENTER);
+      text('💫', cx, headY - 18 + sin(frameCount*0.15)*3);
+    }
+
+    pop();
+  }
+}
+
+// ==================== 粒子/特效 ====================
+function spawnParticles(x, y, col, count, speed){
+  for(let i=0;i<count;i++){
+    particles.push({
+      x, y,
+      vx: random(-speed, speed), vy: random(-speed, speed*0.5),
+      life: random(20, 40), maxLife: 40,
+      color: col, r: random(2, 5)
+    });
+  }
+}
+
+function updateParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    let p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.08; p.vx *= 0.97;
+    p.life--;
+    if(p.life<=0) particles.splice(i,1);
+  }
+}
+
+function drawParticles(){
+  noStroke();
+  for(let p of particles){
+    let c = color(p.color);
+    c.setAlpha(255 * (p.life/p.maxLife));
+    fill(c);
+    circle(p.x, p.y, p.r * (p.life/p.maxLife + 0.3));
+  }
+}
+
+function updateShockwaves(){
+  for(let i=shockwaves.length-1;i>=0;i--){
+    let s = shockwaves[i];
+    s.r += (s.maxR - s.r) * 0.12;
+    s.life--;
+    if(s.dmg > 0){
+      let targets = s.singleTarget ? [s.singleTarget] : [p1,p2];
+      for(let t of targets){
+        if(t === s.owner || s.hit.has(t) || t.hp<=0) continue;
+        const d = dist(s.x, s.y, t.x, t.y - t.h/2);
+        if(d < s.r + 20 && d > s.r - 30){
+          t.takeDamage(s.dmg, s.x, s.y, s.color);
+          s.hit.add(t);
         }
-        
-        class Player {
-            constructor(x, color, name, isPlayer1) {
-                this.x = x; this.y = 0;
-                this.vx = 0; this.vy = 0;
-                this.width = 36; this.height = 72;
-                this.color = color;
-                this.name = name;
-                this.isPlayer1 = isPlayer1;
-                this.facingRight = isPlayer1;
-                
-                this.maxHp = 300; this.hp = 300;
-                this.maxBengqi = isPlayer1 ? 300 : 275;
-                this.bengqi = isPlayer1 ? 300 : 275;
-                this.attackDamage = isPlayer1 ? 4 : 6;
-                this.speed = isPlayer1 ? MOVE_SPEED_P1 : MOVE_SPEED_P2;
-                this.jumpPower = JUMP_POWER;
-                
-                this.onGround = false;
-                this.isAttacking = false;
-                this.attackCooldown = 0;
-                this.attackFrame = 0;
-                this.invincible = false;
-                this.invincibleTime = 0;
-                
-                this.isGrinding = false;
-                this.isDoingProblem = false;
-                this.isFollower = false;
-                this.master = null;
-                this.stolenSkill = null;
-                this.bengqiRegenTimer = 0;
-            }
-            
-            update(opponent) {
-                let canMove = !this.isGrinding && !this.isDoingProblem && !this.isFollower;
-                
-                if (canMove) {
-                    if (this.isPlayer1) {
-                        if (keys['a']) { this.vx = -this.speed; this.facingRight = false; }
-                        else if (keys['d']) { this.vx = this.speed; this.facingRight = true; }
-                        else this.vx *= 0.8;
-                        if (keys['w'] && this.onGround) {
-                            this.vy = -this.jumpPower;
-                            this.onGround = false;
-                            createParticles(this.x + this.width/2, this.y + this.height, '#888', 5);
-                        }
-                    } else {
-                        if (keys['ArrowLeft']) { this.vx = -this.speed; this.facingRight = false; }
-                        else if (keys['ArrowRight']) { this.vx = this.speed; this.facingRight = true; }
-                        else this.vx *= 0.8;
-                        if (keys['ArrowUp'] && this.onGround) {
-                            this.vy = -this.jumpPower;
-                            this.onGround = false;
-                            createParticles(this.x + this.width/2, this.y + this.height, '#888', 5);
-                        }
-                    }
-                } else {
-                    this.vx *= 0.9;
-                }
-                
-                // 重力
-                this.vy += GRAVITY;
-                if (this.vy > 16) this.vy = 16; // 最大下落速度
-                
-                // 分轴移动+碰撞（实心平台）
-                // X轴
-                this.x += this.vx;
-                this.collidePlatforms('x');
-                // 边界
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-                
-                // Y轴
-                this.y += this.vy;
-                this.onGround = false;
-                this.collidePlatforms('y');
-                // 地面
-                if (this.y + this.height > groundY) {
-                    this.y = groundY - this.height;
-                    this.vy = 0;
-                    this.onGround = true;
-                }
-                
-                // 掉出屏幕
-                if (this.y > canvas.height + 100) {
-                    this.hp -= 30;
-                    this.x = this.isPlayer1 ? 100 : canvas.width - 140;
-                    this.y = 100;
-                    this.vx = 0; this.vy = 0;
-                    showNotification('掉落! -30HP', '#ff6b6b');
-                }
-                
-                if (this.attackCooldown > 0) this.attackCooldown--;
-                if (this.attackFrame > 0) this.attackFrame--;
-                if (this.invincibleTime > 0) {
-                    this.invincibleTime--;
-                    if (this.invincibleTime <= 0) this.invincible = false;
-                }
-                
-                // 刷RP
-                if (this.isGrinding) {
-                    this.bengqi += 1/60;
-                    if (this.bengqi > this.maxBengqi) this.bengqi = this.maxBengqi;
-                    if (frameCount % 10 === 0) createParticles(this.x+this.width/2, this.y+this.height/2, '#0000FF', 1);
-                }
-                // 做题
-                if (this.isDoingProblem) {
-                    this.bengqi -= 10/60;
-                    if (this.bengqi <= 0) {
-                        this.bengqi = 0; this.isDoingProblem = false; this.invincible = false;
-                        showNotification(this.name + ' 犇气耗尽!', '#ff6b6b');
-                    } else {
-                        this.invincible = true;
-                        if (frameCount % 8 === 0) createParticles(this.x+this.width/2, this.y, '#ffcc00', 1);
-                    }
-                }
-                // 跟随
-                if (this.isFollower && this.master) {
-                    let tx = this.master.x + (this.master.facingRight ? -50 : 50);
-                    this.x += (tx - this.x) * 0.08;
-                    this.facingRight = this.master.facingRight;
-                }
-                
-                // 攻击判定
-                if (this.isAttacking && this.attackFrame === 10) {
-                    let ax = this.facingRight ? this.x + this.width - 5 : this.x - 50;
-                    let ar = {x:ax, y:this.y+10, w:55, h:this.height-20};
-                    if (this.checkHit(ar, opponent)) {
-                        if (opponent.invincible) {
-                            showNotification('无敌中!', '#ffcc00');
-                        } else if (opponent.isPlayer1 && opponent.bengqi >= 100) {
-                            opponent.bengqi -= 100;
-                            this.bengqi = Math.min(this.bengqi + 100, this.maxBengqi + 200);
-                            showNotification('💰 贿赂成功!', '#C77DFF');
-                            createParticles(opponent.x+opponent.width/2, opponent.y+opponent.height/2, '#ffd700', 25);
-                        } else {
-                            opponent.takeDamage(this.attackDamage);
-                            createParticles(opponent.x+opponent.width/2, opponent.y+opponent.height/2, '#ff6b6b', 15);
-                        }
-                    }
-                }
-                
-                this.bengqiRegenTimer++;
-                if (this.bengqiRegenTimer >= 180) {
-                    this.bengqi = Math.min(this.bengqi + 1, this.maxBengqi);
-                    this.bengqiRegenTimer = 0;
-                }
-            }
-            
-            collidePlatforms(axis) {
-                for (let plat of platforms) {
-                    if (!rectOverlap(this.x, this.y, this.width, this.height, plat.x, plat.y, plat.w, plat.h)) continue;
-                    if (axis === 'x') {
-                        if (this.vx > 0) this.x = plat.x - this.width;
-                        else if (this.vx < 0) this.x = plat.x + plat.w;
-                        this.vx = 0;
-                    } else {
-                        if (this.vy > 0) {
-                            this.y = plat.y - this.height;
-                            this.vy = 0;
-                            this.onGround = true;
-                        } else if (this.vy < 0) {
-                            this.y = plat.y + plat.h;
-                            this.vy = 0;
-                        }
-                    }
-                }
-            }
-            
-            checkHit(range, target) {
-                return rectOverlap(range.x, range.y, range.w, range.h, target.x, target.y, target.width, target.height);
-            }
-            
-            takeDamage(damage) {
-                if (this.invincible) return;
-                this.hp -= damage;
-                this.invincible = true;
-                this.invincibleTime = 25;
-                if (this.hp < 0) this.hp = 0;
-            }
-            
-            attack() {
-                if (this.attackCooldown <= 0 && !this.isGrinding && !this.isDoingProblem) {
-                    this.isAttacking = true;
-                    this.attackFrame = 18;
-                    this.attackCooldown = 25;
-                    setTimeout(() => { this.isAttacking = false; }, 250);
-                }
-            }
-            
-            useSkill1(opponent) {
-                if (this.isPlayer1) {
-                    if (this.isFollower && this.stolenSkill) {
-                        if (this.bengqi >= 50) {
-                            this.bengqi -= 50;
-                            this.useStolenSkill(opponent);
-                        } else showNotification('犇气不足!', '#ff6b6b');
-                        return;
-                    }
-                    if (this.bengqi >= 50 && !this.isFollower) {
-                        let dist = Math.abs((this.x+this.width/2) - (opponent.x+opponent.width/2));
-                        if (dist < 120) {
-                            this.bengqi -= 50;
-                            this.isFollower = true;
-                            this.master = opponent;
-                            let skills = ['grind', 'rpAttack', 'problem'];
-                            this.stolenSkill = skills[Math.floor(Math.random()*skills.length)];
-                            let sn = this.stolenSkill==='grind'?'刷RP':this.stolenSkill==='rpAttack'?'RP攻击':'做题无敌';
-                            showNotification('🤝 成为手下! 偷到:'+sn, '#C77DFF');
-                            createParticles(this.x+this.width/2, this.y+this.height/2, '#C77DFF', 30);
-                        } else showNotification('距离太远!', '#ff6b6b');
-                    }
-                } else {
-                    this.isGrinding = !this.isGrinding;
-                    if (this.isGrinding) {
-                        this.isDoingProblem = false; this.invincible = false;
-                        showNotification('📚 开始刷RP!', '#0000FF');
-                    } else showNotification('停止刷RP!', '#0000FF');
-                }
-            }
-            
-            useStolenSkill(opponent) {
-                switch(this.stolenSkill) {
-                    case 'grind':
-                        this.isGrinding = !this.isGrinding;
-                        showNotification('使用偷来的刷RP!', '#C77DFF');
-                        break;
-                    case 'rpAttack':
-                        let dmg = Math.floor(Math.min(this.bengqi, 60)/2/3);
-                        if (dmg > 0) {
-                            this.bengqi -= dmg * 2 * 3;
-                            projectiles.push({x:this.x+this.width/2, y:this.y+this.height/2, vx:this.facingRight?10:-10, vy:0, damage:dmg, owner:this, color:'#C77DFF', type:'rp'});
-                            showNotification('偷来的RP攻击!', '#C77DFF');
-                        }
-                        break;
-                    case 'problem':
-                        this.isDoingProblem = !this.isDoingProblem;
-                        if (this.isDoingProblem) this.invincible = true;
-                        else this.invincible = false;
-                        showNotification('偷来的做题无敌!', '#C77DFF');
-                        break;
-                }
-            }
-            
-            useSkill2(opponent) {
-                if (!this.isPlayer1) {
-                    if (!this.isGrinding && !this.isDoingProblem) {
-                        let cost = Math.min(this.bengqi, 80);
-                        if (cost >= 10) {
-                            let damage = Math.floor(cost/2);
-                            this.bengqi -= cost;
-                            projectiles.push({x:this.x+this.width/2, y:this.y+this.height/2, vx:this.facingRight?11:-11, vy:0, damage:damage, owner:this, color:'#0000FF', type:'rp'});
-                            showNotification('💥 RP攻击! '+damage+'伤害!', '#0000FF');
-                            createParticles(this.x+this.width/2, this.y+this.height/2, '#0000FF', 15);
-                        } else showNotification('犇气不足!', '#ff6b6b');
-                    }
-                }
-            }
-            
-            useSkill3(opponent) {
-                if (this.isPlayer1) {
-                    if (this.bengqi >= 50) {
-                        let dist = Math.abs((this.x+this.width/2) - (opponent.x+opponent.width/2));
-                        if (dist < 180) {
-                            this.bengqi -= 50;
-                            this.isFollower = false; this.master = null;
-                            let skills = ['grind', 'rpAttack', 'problem'];
-                            this.stolenSkill = skills[Math.floor(Math.random()*skills.length)];
-                            let sn = this.stolenSkill==='grind'?'刷RP':this.stolenSkill==='rpAttack'?'RP攻击':'做题无敌';
-                            showNotification('📋 复刻成功! 获得:'+sn, '#C77DFF');
-                            createParticles(this.x+this.width/2, this.y+this.height/2, '#C77DFF', 25);
-                        } else {
-                            showNotification('距离太远!', '#ff6b6b');
-                            this.bengqi += 50;
-                        }
-                    } else showNotification('犇气不足! 需要50犇气', '#ff6b6b');
-                } else {
-                    if (!this.isGrinding) {
-                        this.isDoingProblem = !this.isDoingProblem;
-                        if (this.isDoingProblem) {
-                            showNotification('🛡 开始做题! 无敌!', '#ffcc00');
-                            this.invincible = true;
-                        } else {
-                            showNotification('停止做题!', '#ffcc00');
-                            this.invincible = false;
-                        }
-                    } else showNotification('刷RP中无法做题!', '#ff6b6b');
-                }
-            }
-            
-            useSkill4(opponent) {
-                if (!this.isPlayer1) {
-                    if (this.bengqi >= 50) {
-                        this.bengqi -= 50;
-                        this.hp = Math.min(this.hp + 30, this.maxHp);
-                        showNotification('💚 发题解! +30HP', '#00ff88');
-                        createParticles(this.x+this.width/2, this.y+this.height/2, '#00ff88', 25);
-                    } else showNotification('犇气不足! 需要50犇气', '#ff6b6b');
-                }
-            }
-            
-            draw() {
-                push();
-                if (this.invincible && frameCount % 6 < 3) tint(255, 128);
-                
-                stroke(this.color);
-                strokeWeight(4);
-                noFill();
-                
-                let cx = this.x + this.width/2;
-                let headY = this.y + 14;
-                let bodyTop = this.y + 26;
-                let bodyBottom = this.y + 50;
-                
-                // 头
-                ellipse(cx, headY, 20, 20);
-                fill(this.color); noStroke();
-                let eyeOff = this.facingRight ? 3 : -3;
-                ellipse(cx+eyeOff-3, headY-2, 2.5, 2.5);
-                ellipse(cx+eyeOff+3, headY-2, 2.5, 2.5);
-                stroke(this.color); strokeWeight(4); noFill();
-                
-                line(cx, bodyTop, cx, bodyBottom);
-                
-                // 手臂
-                if (this.isAttacking) {
-                    let reach = this.attackFrame > 8 ? 38 : 18;
-                    line(cx, bodyTop+4, cx+(this.facingRight?reach:-reach), bodyTop+8);
-                    line(cx, bodyTop+4, cx+(this.facingRight?-12:12), bodyTop+18);
-                } else {
-                    let swing = sin(frameCount*0.2)*0.25*(abs(this.vx)>0.5?1:0);
-                    line(cx, bodyTop+4, cx-18+swing*8, bodyTop+22);
-                    line(cx, bodyTop+4, cx+18-swing*8, bodyTop+22);
-                }
-                
-                // 腿
-                let legSwing = sin(frameCount*0.3)*0.35*(abs(this.vx)>0.5?1:0);
-                if (!this.onGround) {
-                    line(cx, bodyBottom, cx-10, bodyBottom+22);
-                    line(cx, bodyBottom, cx+10, bodyBottom+18);
-                } else {
-                    line(cx, bodyBottom, cx-10+legSwing*8, bodyBottom+22);
-                    line(cx, bodyBottom, cx+10-legSwing*8, bodyBottom+22);
-                }
-                
-                if (this.isGrinding) {
-                    noFill(); strokeWeight(2); stroke(0,0,255,150);
-                    for (let i=0;i<3;i++){let r=25+i*12+(frameCount+i*15)%25;ellipse(cx,this.y+this.height/2,r,r);}
-                }
-                if (this.isDoingProblem) {
-                    noFill(); strokeWeight(3); stroke(255,204,0,200);
-                    let r=60+sin(frameCount*0.2)*4; ellipse(cx,this.y+this.height/2,r,r);
-                    fill(255,204,0); noStroke(); rect(cx-7,this.y-12,14,10);
-                    stroke(255,204,0); noFill();
-                }
-                if (this.isFollower && this.master) {
-                    strokeWeight(2); stroke(199,125,255,80);
-                    drawingContext.setLineDash([5,5]);
-                    line(cx,this.y,this.master.x+this.master.width/2,this.master.y);
-                    drawingContext.setLineDash([]);
-                    fill(199,125,255); noStroke(); textSize(10); textAlign(CENTER);
-                    text('手下', cx, this.y-5);
-                }
-                pop();
-            }
+      }
+    }
+    if(s.life<=0) shockwaves.splice(i,1);
+  }
+}
+
+function drawShockwaves(){
+  noFill();
+  for(let s of shockwaves){
+    let c = color(s.color);
+    c.setAlpha(255 * (s.life/40));
+    strokeWeight(4); stroke(c);
+    circle(s.x, s.y, s.r*2);
+    c.setAlpha(100*(s.life/40));
+    strokeWeight(2); stroke(c);
+    circle(s.x, s.y, s.r*2*0.7);
+  }
+}
+
+function updateProjectiles(){
+  for(let i=projectiles.length-1;i>=0;i--){
+    let p = projectiles[i];
+    p.trail.push({x:p.x,y:p.y});
+    if(p.trail.length > 8) p.trail.shift();
+    p.x += p.vx; p.y += p.vy;
+    p.life--;
+    let hit = false;
+    for(let t of [p1,p2]){
+      if(t === p.owner || t.hp<=0) continue;
+      if(dist(p.x,p.y,t.x,t.y-t.h/2) < p.r + 15){
+        if(p.type === 'stun'){
+          t.takeDamage(p.dmg, p.x, p.y, p.color);
+          t.stunned = p.stunDur;
+          floatTexts.push({x:t.x,y:t.y-t.h-20,text:'眩晕!',color:p.color,life:60,vy:-1.5});
+          for(let j=0;j<20;j++) spawnParticles(t.x,t.y-t.h/2,p.color,1,3);
+        } else if(p.type === 'copy'){
+          t.takeDamage(p.owner.atk/3, p.x, p.y, p.color);
+          const oppSk = CHARACTERS[t.charId].skills;
+          if(oppSk.length>0 && !p.owner.copiedSkill){
+            p.owner.copiedSkill = oppSk[0];
+            floatTexts.push({x:p.owner.x,y:p.owner.y-p.owner.h-20,text:'复刻成功',color:p.color,life:50,vy:-1.5});
+          }
+        } else {
+          t.takeDamage(p.dmg, p.x, p.y, p.color);
         }
-        
-        function updateProjectiles() {
-            for (let i=projectiles.length-1;i>=0;i--) {
-                let p = projectiles[i];
-                p.x += p.vx; p.y += p.vy; p.vy += 0.1;
-                let hitPlat = false;
-                for (let plat of platforms) {
-                    if (p.x>plat.x && p.x<plat.x+plat.w && p.y>plat.y && p.y<plat.y+plat.h) {
-                        hitPlat = true; createParticles(p.x,p.y,p.color,8); break;
-                    }
-                }
-                if (hitPlat||p.y>groundY) { projectiles.splice(i,1); continue; }
-                
-                let target = p.owner===player1?player2:player1;
-                if (p.x>target.x&&p.x<target.x+target.width&&p.y>target.y&&p.y<target.y+target.height) {
-                    if (target.invincible) { showNotification('无敌中!','#ffcc00'); createParticles(p.x,p.y,'#ffcc00',10); }
-                    else if (target.isPlayer1&&target.bengqi>=100) {
-                        target.bengqi-=100; p.owner.bengqi=Math.min(p.owner.bengqi+100,999);
-                        showNotification('💰 贿赂成功!','#C77DFF'); createParticles(p.x,p.y,'#ffd700',25);
-                    } else {
-                        target.takeDamage(p.damage); createParticles(p.x,p.y,p.color,15);
-                    }
-                    projectiles.splice(i,1); continue;
-                }
-                if (p.x<-20||p.x>canvas.width+20) projectiles.splice(i,1);
-            }
+        for(let j=0;j<12;j++) spawnParticles(p.x,p.y,p.color,1,3);
+        screenShake = Math.max(screenShake, 4);
+        hit = true; break;
+      }
+    }
+    for(let plat of platforms){
+      if(p.x>plat.x && p.x<plat.x+plat.w && p.y>plat.y-5 && p.y<plat.y+plat.h+5){
+        hit = true;
+        for(let j=0;j<8;j++) spawnParticles(p.x,p.y,p.color,1,2);
+        break;
+      }
+    }
+    if(hit || p.life<=0 || p.x<-50 || p.x>width+50 || p.y>height+50) projectiles.splice(i,1);
+  }
+}
+
+function drawProjectiles(){
+  for(let p of projectiles){
+    noFill();
+    for(let j=0;j<p.trail.length;j++){
+      let t = p.trail[j];
+      let c = color(p.color);
+      c.setAlpha(180 * j/p.trail.length);
+      stroke(c); strokeWeight(p.r * j/p.trail.length * 0.8);
+      point(t.x,t.y);
+    }
+    noStroke();
+    let c = color(p.color);
+    fill(255,255,255,220); circle(p.x,p.y,p.r*0.6);
+    c.setAlpha(200); fill(c); circle(p.x,p.y,p.r);
+    c.setAlpha(80); fill(c); circle(p.x,p.y,p.r*1.8);
+  }
+}
+
+function updateFloatTexts(){
+  for(let i=floatTexts.length-1;i>=0;i--){
+    let t = floatTexts[i];
+    t.y += t.vy; t.vy *= 0.96; t.life--;
+    if(t.life<=0) floatTexts.splice(i,1);
+  }
+}
+
+function drawFloatTexts(){
+  textAlign(CENTER); textStyle(BOLD);
+  for(let t of floatTexts){
+    let c = color(t.color);
+    c.setAlpha(255 * min(1,t.life/20));
+    fill(c); noStroke();
+    textSize(t.text.length>4?16:20);
+    text(t.text, t.x, t.y);
+  }
+}
+
+function drawSlashEffects(){
+  for(let i=slashEffects.length-1;i>=0;i--){
+    let s = slashEffects[i];
+    s.life--;
+    let prog = 1 - s.life/s.maxLife;
+    push();
+    translate(s.x, s.y);
+    rotate(s.angle);
+    noFill();
+    let c = color(s.color);
+    c.setAlpha(255*(1-prog));
+    stroke(c); strokeWeight(4*(1-prog)+1);
+    arc(0, 0, s.range*2, s.range*1.2, -0.6+prog*1.2, 0.6-prog*1.2);
+    c.setAlpha(100*(1-prog));
+    strokeWeight(2); stroke(c);
+    arc(0, 0, s.range*2*0.7, s.range*0.8, -0.5+prog*1, 0.5-prog*1);
+    pop();
+    if(s.life<=0) slashEffects.splice(i,1);
+  }
+}
+
+// ==================== 平台与背景 ====================
+function setupPlatforms(){
+  platforms = [];
+  const GY = height - 60;
+  const W = width;
+  platforms.push({x:0,y:GY,w:W,h:60,isGround:true});
+  platforms.push({x:100,y:GY-70,w:110,h:16});
+  platforms.push({x:W-210,y:GY-70,w:110,h:16});
+  platforms.push({x:60,y:GY-160,w:130,h:16});
+  platforms.push({x:W-190,y:GY-160,w:130,h:16});
+  platforms.push({x:W/2-130,y:GY-240,w:260,h:16});
+  platforms.push({x:250,y:GY-230,w:100,h:16});
+  platforms.push({x:W-350,y:GY-230,w:100,h:16});
+  platforms.push({x:W/2-50,y:GY-330,w:100,h:16});
+}
+
+function setupBackground(){
+  bgElements = { buildings: [], stars: [] };
+  for(let i=0;i<15;i++){
+    let bw = random(40, 90);
+    let bh = random(120, 350);
+    bgElements.buildings.push({
+      x: i*80 + random(-20,20) - 200,
+      w: bw, h: bh,
+      color: color(random(15,30), random(10,25), random(35,55)),
+      windows: []
+    });
+  }
+  bgElements.buildings.forEach(b=>{
+    let cols = Math.floor(b.w/14);
+    let rows = Math.floor(b.h/20);
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        if(Math.random()<0.4){
+          let wc = Math.random()<0.5 ? '#FF55AA' : '#55DDFF';
+          b.windows.push({x:c*14+4, y:r*20+4, w:6, h:8, c:wc});
         }
-        
-        function drawProjectiles() {
-            for (let p of projectiles) {
-                push(); noStroke();
-                fill(p.color); ellipse(p.x,p.y,14,14);
-                fill(p.color+'60'); ellipse(p.x-p.vx*0.8,p.y,10,10);
-                fill(p.color+'30'); ellipse(p.x-p.vx*1.5,p.y,6,6);
-                pop();
-            }
-        }
-        
-        function updateParticles() {
-            for (let i=particles.length-1;i>=0;i--) {
-                let p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life--;
-                if(p.life<=0) particles.splice(i,1);
-            }
-        }
-        
-        function drawParticles() {
-            for (let p of particles) {
-                push(); let a=p.life/p.maxLife; noStroke();
-                fill(p.color);
-                drawingContext.globalAlpha = a;
-                ellipse(p.x,p.y,p.size*a,p.size*a);
-                drawingContext.globalAlpha = 1;
-                pop();
-            }
-        }
-        
-        function drawScene() {
-            // 深色渐变背景
-            for (let i=0;i<canvas.height;i++) {
-                let t=i/canvas.height;
-                stroke(lerp(10,5,t), lerp(8,8,t), lerp(28,30,t));
-                line(0,i,canvas.width,i);
-            }
-            
-            // 透视网格（地面区域，不闪）
-            push();
-            let gridSize=50, horizonY=groundY;
-            stroke(0,120,200,50); strokeWeight(1);
-            for (let i=0;i<15;i++){
-                let y=horizonY-i*gridSize*(1-i/20);
-                if(y>0){let a=map(i,0,15,150,20);stroke(0,160,220,a);line(0,y,canvas.width,y);}
-            }
-            stroke(0,100,180,40);
-            let vx=canvas.width/2;
-            for(let i=-12;i<=12;i++){let x=vx+i*gridSize*1.5;line(x,horizonY,vx,horizonY-280);}
-            pop();
-            
-            // 静态建筑剪影（深色，不刺眼）
-            noStroke();
-            fill(8,8,22);
-            rect(0,groundY-180,80,180);
-            rect(80,groundY-250,60,250);
-            rect(140,groundY-150,50,150);
-            rect(canvas.width-70,groundY-220,70,220);
-            rect(canvas.width-130,groundY-160,60,160);
-            rect(canvas.width-190,groundY-280,60,280);
-            
-            // 静态窗户（不闪烁，固定颜色和亮度）
-            for (let w of windowData) {
-                let c;
-                if (w.c==='m') c=[255,80,180,120];
-                else if (w.c==='c') c=[0,180,255,120];
-                else c=[0,220,180,100];
-                fill(c[0],c[1],c[2],c[3]);
-                rect(w.x,w.y,w.w,w.h);
-            }
-            
-            // 边界霓虹线（简洁）
-            push();
-            drawingContext.shadowBlur=15;
-            drawingContext.shadowColor='#C77DFF';
-            stroke(199,125,255,120); strokeWeight(2);
-            line(0,0,0,groundY);
-            drawingContext.shadowColor='#0000FF';
-            stroke(0,0,255,120);
-            line(canvas.width,0,canvas.width,groundY);
-            pop();
-            
-            // 平台（金属+霓虹顶边）
-            for (let plat of platforms) {
-                noStroke(); fill(18,22,38);
-                rect(plat.x,plat.y,plat.w,plat.h);
-                push();
-                drawingContext.shadowBlur=10;
-                drawingContext.shadowColor='#00ffff';
-                stroke(0,220,255,180); strokeWeight(2);
-                line(plat.x,plat.y,plat.x+plat.w,plat.y);
-                pop();
-                stroke(0,150,200,80); strokeWeight(1);
-                line(plat.x,plat.y+plat.h,plat.x+plat.w,plat.y+plat.h);
-                fill(0,255,255); noStroke();
-                ellipse(plat.x+4,plat.y,4,4);
-                ellipse(plat.x+plat.w-4,plat.y,4,4);
-            }
-            
-            // 地面
-            noStroke(); fill(12,12,28);
-            rect(0,groundY,canvas.width,GROUND_HEIGHT);
-            push();
-            drawingContext.shadowBlur=12;
-            drawingContext.shadowColor='#ff00ff';
-            stroke(200,0,220,180); strokeWeight(3);
-            line(0,groundY,canvas.width,groundY);
-            pop();
-            stroke(0,80,160,30); strokeWeight(1);
-            for(let x=0;x<canvas.width;x+=40) line(x,groundY+5,x,groundY+GROUND_HEIGHT);
-            for(let y=groundY+15;y<groundY+GROUND_HEIGHT;y+=15) line(0,y,canvas.width,y);
-            
-            noStroke();
-        }
-        
-        function drawHealthBar(x,y,player,color,isLeft) {
-            push();
-            fill(0,0,0,120);
-            rect(x-5,y-5,210,60,8);
-            noStroke(); fill(255); textSize(15);
-            textAlign(isLeft?LEFT:RIGHT);
-            text(player.name,x,y);
-            fill(50,50,50); rect(x,y+8,200,18,4);
-            let hpW=(player.hp/player.maxHp)*200;
-            fill(255,70,70); rect(x,y+8,hpW,18,4);
-            fill(50,50,50); rect(x,y+30,200,10,3);
-            let bqW=(player.bengqi/player.maxBengqi)*200;
-            fill(color); rect(x,y+30,bqW,10,3);
-            fill(255); textSize(11); textAlign(CENTER);
-            text(Math.floor(player.hp)+'/'+player.maxHp,x+100,y+22);
-            text('犇气: '+Math.floor(player.bengqi),x+100,y+39);
-            let sy=y+52; textAlign(isLeft?LEFT:RIGHT);
-            if(player.isGrinding){fill('#0000FF');textSize(10);text('📚 刷RP中',x,sy);}
-            if(player.isDoingProblem){fill('#ffcc00');textSize(10);text('🛡 做题无敌',x,sy+12);}
-            pop();
-        }
-        
-        function drawNotifications() {
-            for(let i=notifications.length-1;i>=0;i--){
-                let n=notifications[i]; let age=Date.now()-n.time;
-                if(age>1500){notifications.splice(i,1);continue;}
-                push();
-                let a=1; if(age>1200)a=(1500-age)/300;
-                textAlign(CENTER); textSize(18);
-                drawingContext.globalAlpha=a;
-                fill(n.color); noStroke();
-                text(n.text,canvas.width/2,canvas.height/2-60+(age/1500)*50);
-                drawingContext.globalAlpha=1;
-                pop();
-            }
-        }
-        
-        function setup() {
-            canvas = createCanvas(windowWidth, windowHeight);
-            canvas.parent(document.body);
-            canvas.id('gameCanvas');
-            groundY = windowHeight - GROUND_HEIGHT - 80;
-            frameRate(60);
-            initPlatforms();
-            initWindowData();
-            setupButtonEvents();
-            noLoop(); // 游戏开始前不绘制
-        }
-        
-        function handlePlayerAction(pn, action) {
-            if(!gameRunning)return;
-            let p = pn==1?player1:player2;
-            let o = pn==1?player2:player1;
-            switch(action){
-                case'attack':p.attack();break;
-                case'skill1':p.useSkill1(o);break;
-                case'skill2':p.useSkill2(o);break;
-                case'skill3':p.useSkill3(o);break;
-                case'skill4':p.useSkill4(o);break;
-            }
-            let sel = pn==1?'.p1':'.p2';
-            document.querySelectorAll(sel+' .skill-key[data-action="'+action+'"]').forEach(b=>{
-                b.classList.add('active'); setTimeout(()=>b.classList.remove('active'),150);
-            });
-        }
-        
-        function setupButtonEvents() {
-            document.querySelectorAll('#pcP1Controls .skill-key').forEach(btn=>{
-                let a=btn.dataset.action;
-                let trig=e=>{e.preventDefault();handlePlayerAction(1,a);};
-                btn.addEventListener('mousedown',trig); btn.addEventListener('touchstart',trig);
-            });
-            document.querySelectorAll('#pcP2Controls .skill-key').forEach(btn=>{
-                let a=btn.dataset.action;
-                let trig=e=>{e.preventDefault();handlePlayerAction(2,a);};
-                btn.addEventListener('mousedown',trig); btn.addEventListener('touchstart',trig);
-            });
-            document.querySelectorAll('#mobileP1Controls .skill-btn-mobile').forEach(btn=>{
-                let a=btn.dataset.action;
-                btn.addEventListener('touchstart',e=>{e.preventDefault();handlePlayerAction(1,a);});
-            });
-            document.querySelectorAll('#mobileP2Controls .skill-btn-mobile').forEach(btn=>{
-                let a=btn.dataset.action;
-                btn.addEventListener('touchstart',e=>{e.preventDefault();handlePlayerAction(2,a);});
-            });
-            document.querySelectorAll('.dpad-btn').forEach(btn=>{
-                let k=btn.dataset.key;
-                btn.addEventListener('touchstart',e=>{e.preventDefault();keys[k]=true;});
-                btn.addEventListener('touchend',e=>{e.preventDefault();keys[k]=false;});
-            });
-        }
-        
-        function keyPressed() {
-            keys[key]=true;
-            if(!gameRunning)return false;
-            if(key==='f'||key==='F'){player1.attack();flashBtn('#pcP1Controls','attack');}
-            if(key==='q'||key==='Q'){player1.useSkill1(player2);flashBtn('#pcP1Controls','skill1');}
-            if(key==='e'||key==='E'){player1.useSkill3(player2);flashBtn('#pcP1Controls','skill3');}
-            if(key==='l'||key==='L'){player2.attack();flashBtn('#pcP2Controls','attack');}
-            if(key==='i'||key==='I'){player2.useSkill1(player1);flashBtn('#pcP2Controls','skill1');}
-            if(key==='o'||key==='O'){player2.useSkill2(player1);flashBtn('#pcP2Controls','skill2');}
-            if(key==='p'||key==='P'){player2.useSkill3(player1);flashBtn('#pcP2Controls','skill3');}
-            if(key==='k'||key==='K'){player2.useSkill4(player1);flashBtn('#pcP2Controls','skill4');}
-            return false;
-        }
-        
-        function flashBtn(cid,action){
-            let b=document.querySelector(cid+' .skill-key[data-action="'+action+'"]');
-            if(b){b.classList.add('active');setTimeout(()=>b.classList.remove('active'),150);}
-        }
-        
-        function keyReleased(){ keys[key]=false; }
-        
-        function draw() {
-            background(10,10,26);
-            if(!gameRunning)return;
-            player1.update(player2);
-            player2.update(player1);
-            updateProjectiles();
-            updateParticles();
-            drawScene();
-            player1.draw(); player2.draw();
-            drawProjectiles(); drawParticles();
-            drawHealthBar(20,15,player1,'#C77DFF',true);
-            drawHealthBar(canvas.width-220,15,player2,'#0000FF',false);
-            drawNotifications();
-            if(player1.hp<=0)endGame(player2);
-            else if(player2.hp<=0)endGame(player1);
-        }
-        
-        function windowResized() {
-            resizeCanvas(windowWidth,windowHeight);
-            groundY=windowHeight-GROUND_HEIGHT-80;
-            initPlatforms();
-            initWindowData();
-            if(player1&&player2){
-                player1.y=groundY-player1.height;
-                player2.y=groundY-player2.height;
-            }
-        }
-        
-        function startGame() {
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('endScreen').classList.add('hidden');
-            let isMobile=window.innerWidth<=900;
-            document.getElementById('pcP1Controls').style.display=isMobile?'none':'flex';
-            document.getElementById('pcP2Controls').style.display=isMobile?'none':'flex';
-            document.getElementById('mobileP1Controls').style.display=isMobile?'block':'none';
-            document.getElementById('mobileP2Controls').style.display=isMobile?'block':'none';
-            document.getElementById('moveHintP1').style.display=isMobile?'none':'block';
-            document.getElementById('moveHintP2').style.display=isMobile?'none':'block';
-            
-            initPlatforms();
-            initWindowData();
-            player1=new Player(150,'#C77DFF','投机者',true);
-            player2=new Player(windowWidth-190,'#0000FF','RP狂魔',false);
-            player1.y=groundY-player1.height;
-            player2.y=groundY-player2.height;
-            projectiles=[];particles=[];notifications=[];
-            gameRunning=true;
-            loop(); // 启动p5绘制循环
-        }
-        
-        function endGame(winner) {
-            gameRunning=false;
-            noLoop();
-            document.getElementById('endScreen').classList.remove('hidden');
-            document.getElementById('winnerText').textContent='🎉 '+winner.name+' 获胜!';
-            document.getElementById('winnerText').style.color=winner.color;
-        }
-        
-        function restartGame(){ startGame(); }
-    </script>
+      }
+    }
+  });
+  for(let i=0;i<50;i++){
+    bgElements.stars.push({x:random(width), y:random(height*0.5), r:random(0.5,1.5), a:random(100,255)});
+  }
+}
+
+function drawBackground(){
+  for(let i=0;i<=height;i+=4){
+    let t = i/height;
+    let r = lerp(12,5,t), g = lerp(8,10,t), b = lerp(30,35,t);
+    stroke(r,g,b); line(0,i,width,i);
+  }
+  noStroke();
+  fill(100,30,200,30); circle(width*0.2, height*0.3, 400);
+  fill(0,50,200,25); circle(width*0.8, height*0.6, 500);
+  fill(200,50,150,15); circle(width*0.5, height*0.1, 300);
+  for(let s of bgElements.stars){
+    fill(255,255,255,s.a);
+    circle(s.x,s.y,s.r);
+  }
+  for(let b of bgElements.buildings){
+    const GY = height - 60;
+    fill(b.color); noStroke();
+    rect(b.x, GY - b.h, b.w, b.h);
+    noStroke();
+    for(let w of b.windows){
+      fill(w.c);
+      rect(b.x+w.x, GY-b.h+w.y, w.w, w.h);
+    }
+  }
+  const GY = height - 60;
+  stroke(0,200,255,40); strokeWeight(1);
+  for(let i=0;i<12;i++){
+    let y = GY - i*30;
+    if(y<GY-250) break;
+    let spread = i*6;
+    line(0-spread,y,width+spread,y);
+  }
+  for(let i=-10;i<=10;i++){
+    let vx = width/2 + i*80;
+    line(vx, GY, width/2 + i*350, GY-200);
+  }
+  strokeWeight(3);
+  stroke(199,125,255,100); line(0,0,0,height);
+  stroke(0,0,255,100); line(width,0,width,height);
+}
+
+function drawPlatforms(){
+  const GY = height - 60;
+  for(let p of platforms){
+    if(p.isGround){
+      noStroke();
+      fill(15,15,30);
+      rect(p.x,p.y,p.w,p.h);
+      strokeWeight(3);
+      stroke(255,0,180,200);
+      line(p.x,p.y,p.w,p.y);
+      stroke(0,180,255,25); strokeWeight(1);
+      for(let x=0;x<p.w;x+=40) line(p.x+x,p.y,p.x+x,p.y+p.h);
+    } else {
+      noStroke();
+      fill(20,20,40,230);
+      rect(p.x,p.y,p.w,p.h,4);
+      fill(10,10,25,200);
+      rect(p.x,p.y+p.h,p.w,4,2);
+      strokeWeight(3);
+      stroke(0,255,255,220);
+      line(p.x+2,p.y,p.x+p.w-2,p.y);
+      strokeWeight(1);
+      stroke(0,200,255,80);
+      line(p.x,p.y,p.x,p.y+p.h);
+      line(p.x+p.w,p.y,p.x+p.w,p.y+p.h);
+      noStroke(); fill(0,255,255,255);
+      circle(p.x+5,p.y,3); circle(p.x+p.w-5,p.y,3);
+    }
+  }
+}
+
+// ==================== UI绘制 ====================
+function drawUI(){
+  drawHealthBar(20, 20, 220, p1, true);
+  drawHealthBar(width-240, 20, 220, p2, false);
+  fill(255,255,255,120); noStroke();
+  textAlign(CENTER); textSize(12);
+  text(`${p1.name} W跳 A/D移动 | ${p2.name} ↑跳 ←→移动`, width/2, 30);
+}
+
+function drawHealthBar(x, y, w, player, isLeft){
+  let h = 50;
+  noStroke();
+  fill(0,0,0,150);
+  rect(x,y,w,h,8);
+  noFill(); strokeWeight(2); stroke(player.color);
+  rect(x,y,w,h,8);
+  fill(player.color); noStroke();
+  textAlign(isLeft?LEFT:RIGHT); textSize(13); textStyle(BOLD);
+  text(player.name, isLeft?x+10:x+w-10, y+16);
+  fill(80,20,20); noStroke();
+  rect(x+8,y+22,w-16,10,4);
+  let hpW = (w-16) * (player.hp/player.maxHp);
+  fill(player.color);
+  rect(x+8,y+22,hpW,10,4);
+  fill(255); textStyle(NORMAL);
+  textAlign(CENTER); textSize(10);
+  text(Math.ceil(player.hp)+'/'+player.maxHp, x+w/2, y+30);
+  fill(20,20,50); noStroke();
+  rect(x+8,y+35,w-16,8,3);
+  fill(255,200,0);
+  let bqW = (w-16) * (player.bq/player.maxBq);
+  rect(x+8,y+35,bqW,8,3);
+  fill(255,200,0); textAlign(isLeft?LEFT:RIGHT); textSize(10);
+  text('⚡'+Math.floor(player.bq), isLeft?x+10:x+w-10, y+45);
+  let sx = isLeft ? x+w-28 : x+4;
+  if(player.chargingRP){ fill(0,180,255); textAlign(CENTER); textSize(11); text('📝',sx+12,y+13); }
+  if(player.immortal){ fill(0,255,255); textAlign(CENTER); textSize(11); text('🛡',sx+12,y+13); }
+  if(player.slowed>0){ fill(95,159,214); textAlign(CENTER); textSize(11); text('🐌',sx-12,y+13); }
+  if(player.teleportInvuln>0){ fill(player.color); textAlign(CENTER); textSize(11); text('✨',sx-24,y+13); }
+}
+
+// ==================== 技能按钮UI ====================
+function buildSkillBars(){
+  const p1s = document.getElementById('p1Skills');
+  const p2s = document.getElementById('p2Skills');
+  p1s.innerHTML = ''; p2s.innerHTML = '';
+  const p1Atk = document.createElement('div');
+  p1Atk.className='sk-btn attack'; p1Atk.id='btn-p1-atk';
+  p1Atk.innerHTML='<span class="k">F</span><span class="n">普攻</span>';
+  p1s.appendChild(p1Atk);
+  const p1Sk = CHARACTERS[p1Char].skills;
+  p1Sk.forEach((s,i)=>{
+    const b = document.createElement('div');
+    b.className = 'sk-btn'; b.id = `btn-p1-s${i}`;
+    b.innerHTML = `<span class="k">${s.key}</span><span class="n">${s.name}</span>`;
+    p1s.appendChild(b);
+  });
+  const p2Atk = document.createElement('div');
+  p2Atk.className='sk-btn attack'; p2Atk.id='btn-p2-atk';
+  p2Atk.innerHTML='<span class="k">L</span><span class="n">普攻</span>';
+  p2s.appendChild(p2Atk);
+  const p2Sk = CHARACTERS[p2Char].skills;
+  p2Sk.forEach((s,i)=>{
+    const b = document.createElement('div');
+    b.className = 'sk-btn'; b.id = `btn-p2-s${i}`;
+    b.innerHTML = `<span class="k">${s.key}</span><span class="n">${s.name}</span>`;
+    p2s.appendChild(b);
+  });
+  bindSkillButtons();
+}
+
+function bindSkillButtons(){
+  const addBtn = (id, keyCode) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const down = (e)=>{ e.preventDefault(); el.classList.add('pressed'); keys[keyCode]=true; keyPressedOnce[keyCode]=true; };
+    const up = (e)=>{ e.preventDefault(); el.classList.remove('pressed'); keys[keyCode]=false; };
+    el.addEventListener('touchstart', down, {passive:false});
+    el.addEventListener('touchend', up, {passive:false});
+    el.addEventListener('touchcancel', up, {passive:false});
+    el.addEventListener('mousedown', down);
+    el.addEventListener('mouseup', up);
+    el.addEventListener('mouseleave', up);
+  };
+  addBtn('btn-p1-atk', 70);
+  addBtn('btn-p2-atk', 76);
+  [81,69,82].forEach((kc,i)=>addBtn(`btn-p1-s${i}`, kc));
+  [85,73,79,75].forEach((kc,i)=>addBtn(`btn-p2-s${i}`, kc));
+}
+
+function highlightBtn(keyCode, pressed){
+  const map = {
+    70:'btn-p1-atk', 81:'btn-p1-s0', 69:'btn-p1-s1', 82:'btn-p1-s2',
+    76:'btn-p2-atk', 85:'btn-p2-s0', 73:'btn-p2-s1', 79:'btn-p2-s2', 75:'btn-p2-s3'
+  };
+  const id = map[keyCode];
+  if(id){
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('pressed', pressed);
+  }
+}
+
+// ==================== 移动端控制 ====================
+const mInput = { left:false, right:false, jump:false, jump2:false };
+
+function setupMobileControls(){
+  if(!isMobile) return;
+  document.getElementById('mobileControls').style.display = 'block';
+  const stickL = document.getElementById('stickL');
+  const joyL = document.getElementById('joyLeft');
+  let joyActive = false, joyId=null, sx=0,sy=0;
+  joyL.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyActive=true; joyId=t.identifier;
+    const r = joyL.getBoundingClientRect();
+    sx = r.left + 70; sy = r.top + 70;
+  });
+  joyL.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    for(let t of e.changedTouches){
+      if(t.identifier===joyId){
+        let dx = t.clientX - sx, dy = t.clientY - sy;
+        let d = Math.sqrt(dx*dx+dy*dy);
+        if(d>40){ dx*=40/d; dy*=40/d; }
+        stickL.style.transform = `translate(${dx}px,${dy}px)`;
+        mInput.left = dx < -15; mInput.right = dx > 15;
+        if(dy < -20) mInput.jump = true;
+      }
+    }
+  },{passive:false});
+  const endJoy = e=>{
+    for(let t of e.changedTouches){
+      if(t.identifier===joyId){ joyActive=false; joyId=null; stickL.style.transform=''; mInput.left=mInput.right=mInput.jump=false; }
+    }
+  };
+  joyL.addEventListener('touchend', endJoy);
+  joyL.addEventListener('touchcancel', endJoy);
+
+  const jb = document.getElementById('mJump');
+  jb.addEventListener('touchstart', e=>{ e.preventDefault(); jb.style.background='rgba(255,255,255,0.35)'; mInput.jump=true; });
+  jb.addEventListener('touchend', e=>{ e.preventDefault(); jb.style.background=''; mInput.jump=false; });
+
+  const ms = document.getElementById('mSkills');
+  ms.innerHTML = '';
+  const addMBtn = (label, color, onDown) => {
+    const b = document.createElement('div');
+    b.className = 'm-sk-btn '+color;
+    b.textContent = label;
+    b.addEventListener('touchstart', e=>{ e.preventDefault(); b.style.background='rgba(255,255,255,0.4)'; onDown(); });
+    b.addEventListener('touchend', e=>{ e.preventDefault(); b.style.background=''; });
+    ms.appendChild(b);
+  };
+  addMBtn('攻', 'p2', ()=>{ keys[76]=true; keyPressedOnce[76]=true; setTimeout(()=>keys[76]=false,50); });
+  addMBtn('S1', 'p2', ()=>{ keys[85]=true; keyPressedOnce[85]=true; setTimeout(()=>keys[85]=false,50); });
+  addMBtn('S2', 'p2', ()=>{ keys[73]=true; keyPressedOnce[73]=true; setTimeout(()=>keys[73]=false,50); });
+  addMBtn('S3', 'p2', ()=>{ keys[79]=true; keyPressedOnce[79]=true; setTimeout(()=>keys[79]=false,50); });
+  if(CHARACTERS[p2Char].skills.length>=4)
+    addMBtn('S4', 'p2', ()=>{ keys[75]=true; keyPressedOnce[75]=true; setTimeout(()=>keys[75]=false,50); });
+  addMBtn('P1', 'p1', ()=>{ keys[70]=true; keyPressedOnce[70]=true; setTimeout(()=>keys[70]=false,50); });
+}
+
+// ==================== 游戏主流程 ====================
+function startGame(){
+  console.log('startGame 被调用', p1Char, p2Char);
+  if(!p1Char || !p2Char){
+    console.warn('角色未选全');
+    return;
+  }
+  try {
+    document.getElementById('selectScreen').style.display = 'none';
+    document.getElementById('skillBar').style.display = 'block';
+    gameState = 'playing';
+    checkMobile();
+    setupPlatforms();
+    setupBackground();
+    buildSkillBars();
+    if(isMobile) setupMobileControls();
+
+    var GY = height - 60;
+    p1 = new Fighter(width * 0.25, GY, p1Char, true);
+    p2 = new Fighter(width * 0.75, GY, p2Char, false);
+
+    projectiles = [];
+    particles = [];
+    shockwaves = [];
+    floatTexts = [];
+    slashEffects = [];
+    screenShake = 0;
+
+    loop();
+  } catch(e) {
+    console.error('startGame 出错:', e);
+    alert('启动游戏失败: ' + e.message);
+  }
+}
+
+function setup(){
+  let cv = createCanvas(windowWidth, windowHeight);
+  cv.parent(document.body);
+  cv.style('position','fixed');
+  cv.style('top','0'); cv.style('left','0');
+  cv.style('z-index','1');
+  noSmooth();
+  frameRate(60);
+  initSelectScreen();
+  noLoop();
+}
+
+function draw(){
+  if(gameState !== 'playing'){
+    background(8,8,26);
+    noLoop();
+    return;
+  }
+  push();
+  if(screenShake > 0){ translate(random(-screenShake,screenShake), random(-screenShake,screenShake)); screenShake*=0.85; if(screenShake<0.5)screenShake=0; }
+
+  drawBackground();
+  drawPlatforms();
+
+  p1.update(p2);
+  p2.update(p1);
+
+  if(keys[P1_KEYS.atk]) { p1.attack(p2); keys[P1_KEYS.atk]=false; highlightBtn(70,false); }
+  if(keys[P2_KEYS.atk]) { p2.attack(p1); keys[P2_KEYS.atk]=false; highlightBtn(76,false); }
+
+  const checkSkill = (player, keyList, opp) => {
+    keyList.forEach((kc,i)=>{
+      if(keyPressedOnce[kc]){
+        player.useSkill(i, opp);
+        keyPressedOnce[kc] = false;
+        highlightBtn(kc,false);
+      }
+    });
+  };
+  checkSkill(p1, [81,69,82], p2);
+  checkSkill(p2, [85,73,79,75], p1);
+
+  updateProjectiles();
+  updateShockwaves();
+  updateParticles();
+  updateFloatTexts();
+
+  drawShockwaves();
+  drawProjectiles();
+  drawSlashEffects();
+  p1.draw();
+  p2.draw();
+  drawParticles();
+  drawFloatTexts();
+
+  pop();
+  drawUI();
+
+  for(let k in keyPressedOnce) keyPressedOnce[k] = false;
+
+  if(p1.hp <= 0 || p2.hp <= 0){
+    gameState = 'win';
+    noLoop();
+    showWin();
+  }
+}
+
+function showWin(){
+  const ws = document.getElementById('winScreen');
+  const wt = document.getElementById('winText');
+  const sub = document.getElementById('winSub');
+  const winner = p1.hp>0 ? p1 : p2;
+  wt.textContent = winner.name + ' 获胜!';
+  wt.style.color = winner.color;
+  wt.style.textShadow = `0 0 40px ${winner.color}`;
+  sub.textContent = (winner===p1?'玩家1（紫方）':'玩家2（蓝方）')+' KO!';
+  ws.style.display = 'flex';
+}
+
+function keyPressed(){
+  keys[keyCode] = true;
+  keyPressedOnce[keyCode] = true;
+  highlightBtn(keyCode, true);
+  if([32,37,38,39,40,87,65,83,68].includes(keyCode)) return false;
+}
+function keyReleased(){
+  keys[keyCode] = false;
+  highlightBtn(keyCode, false);
+}
+
+function windowResized(){
+  resizeCanvas(windowWidth, windowHeight);
+  if(gameState === 'playing'){
+    setupPlatforms();
+    setupBackground();
+  }
+}
+</script>
 </body>
 </html>
